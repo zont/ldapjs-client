@@ -1,0 +1,51 @@
+{
+  "author": "Alexander Zonov",
+  "name": "ldapjs-client",
+  "description": "LDAP js client",
+  "keywords": [
+    "LDAP",
+    "ldap",
+    "client",
+    "simple",
+    "promised",
+    "async"
+  ],
+  "version": "0.0.1",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/zont/ldapjs-client.git"
+  },
+  "main": "src/index.js",
+  "scripts": {
+    "lint": "eslint --fix src/**/* __tests__/**/*",
+    "test": "jest --forceExit"
+  },
+  "dependencies": {
+    "asn1": "0.2.3",
+    "assert-plus": "^1.0.0",
+    "bunyan": "^1.8.3",
+    "dashdash": "^1.14.0",
+    "backoff": "^2.5.0",
+    "ldap-filter": "0.2.2",
+    "once": "^1.4.0",
+    "vasync": "^1.6.4"
+  },
+  "devDependencies": {
+    "babel-jest": "22.4.1",
+    "eslint": "4.18.1",
+    "jest": "22.4.2"
+  },
+  "jest": {
+    "verbose": true,
+    "collectCoverage": true,
+    "coverageDirectory": "coverage",
+    "coverageReporters": [
+      "text-summary",
+      "html"
+    ]
+  },
+  "engines": {
+    "node": ">=8.0"
+  }
+}

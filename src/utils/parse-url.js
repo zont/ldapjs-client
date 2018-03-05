@@ -11,7 +11,7 @@ module.exports = str => {
   assert.ok(PROTOCOLS.includes(u.protocol), `Unsupported protocol: ${u.protocol}`);
 
   u.secure = u.protocol === 'ldaps:';
-  u.hostname = u.hostname || 'localhost';
+  u.host = u.hostname || 'localhost';
   u.port = u.port ? parseInt(u.port, 10) : u.secure ? 636 : 389;
   u.pathname = u.pathname ? querystring.unescape(u.pathname.substr(1)) : u.pathname;
 

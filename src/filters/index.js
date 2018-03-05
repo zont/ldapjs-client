@@ -14,14 +14,15 @@ const OrFilter = require('./or_filter');
 const PresenceFilter = require('./presence_filter');
 const SubstringFilter = require('./substr_filter');
 
-function _parse(ber) {
+const _parse = ber => {
   assert.ok(ber);
 
-  function parseSet(f) {
+  const parseSet = f => {
     const end = ber.offset + ber.length;
-    while (ber.offset < end)
+    while (ber.offset < end) {
       f.addFilter(_parse(ber));
-  }
+    }
+  };
 
   let f;
 
@@ -85,9 +86,9 @@ function _parse(ber) {
 
   assert.ok(f);
   return f;
-}
+};
 
-function cloneFilter(input) {
+const cloneFilter = input => {
   let child;
   if (input.type === 'and' || input.type === 'or') {
     child = input.filters.map(cloneFilter);
@@ -118,7 +119,7 @@ function cloneFilter(input) {
     default:
       throw new Error('invalid filter type:' + input.type);
   }
-}
+};
 
 module.exports = {
   parse(ber) {

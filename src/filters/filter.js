@@ -25,7 +25,7 @@ module.exports = {
   },
 
   mixin(target) {
-    target.prototype.toBer = function toBer(ber) {
+    target.prototype.toBer = function(ber) {
       if (!ber || !(ber instanceof BerWriter))
         throw new TypeError('ber (BerWriter) required');
 

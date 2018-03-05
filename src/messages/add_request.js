@@ -54,9 +54,7 @@ module.exports = class AddRequest extends LDAPMessage {
 
     ber.writeString(this.entry.toString());
     ber.startSequence();
-    this.attributes.forEach(function (a) {
-      a.toBer(ber);
-    });
+    this.attributes.forEach(a => a.toBer(ber));
     ber.endSequence();
 
     return ber;

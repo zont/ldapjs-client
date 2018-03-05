@@ -87,7 +87,7 @@ module.exports = {
 };
 
 // Some whacky games here to make sure all the codes are exported
-Object.keys(CODES).forEach(function (code) {
+Object.keys(CODES).forEach(code => {
   module.exports[code] = CODES[code];
 
   if (code === 'LDAP_SUCCESS')

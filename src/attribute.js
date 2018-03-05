@@ -80,7 +80,7 @@ class Attribute {
     ber.writeString(this.type);
     ber.startSequence(Protocol.LBER_SET);
     if (this._vals.length) {
-      this._vals.forEach(function (b) {
+      this._vals.forEach(b => {
         ber.writeByte(asn1.Ber.OctetString);
         ber.writeLength(b.length);
         for (let i = 0; i < b.length; ++i)

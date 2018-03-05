@@ -2,17 +2,17 @@ const assert = require('assert-plus');
 
 ///--- Helpers
 
-function invalidDN(name) {
+const invalidDN = name => {
   const e = new Error();
   e.name = 'InvalidDistinguishedNameError';
   e.message = name;
   return e;
-}
+};
 
 const isAlphaNumeric = c => /[A-Za-z0-9]/.test(c);
 const isWhitespace = c => /\s/.test(c);
 
-function escapeValue(val, forceQuote) {
+const escapeValue = (val, forceQuote) => {
   let out = '';
   let cur = 0;
   const len = val.length;
@@ -33,7 +33,7 @@ function escapeValue(val, forceQuote) {
   if (quoted)
     out = '"' + out + '"';
   return out;
-}
+};
 
 ///--- API
 
@@ -96,14 +96,14 @@ class RDN {
 }
 
 // Thank you OpenJDK!
-function parse(name) {
+const parse = name => {
   if (typeof (name) !== 'string')
     throw new TypeError('name (string) required');
 
   let cur = 0;
   const len = name.length;
 
-  function parseRdn() {
+  const parseRdn = () => {
     const rdn = new RDN();
     let order = 0;
     rdn.spLead = trim();
@@ -127,18 +127,18 @@ function parse(name) {
       ++order;
     }
     return rdn;
-  }
+  };
 
-  function trim() {
+  const trim = () => {
     let count = 0;
     while ((cur < len) && isWhitespace(name[cur])) {
       ++cur;
       ++count;
     }
     return count;
-  }
+  };
 
-  function parseAttrType() {
+  const parseAttrType = () => {
     const beg = cur;
     while (cur < len) {
       const c = name[cur];
@@ -159,9 +159,9 @@ function parse(name) {
       throw invalidDN(name);
 
     return name.slice(beg, cur);
-  }
+  };
 
-  function parseAttrValue(opts) {
+  const parseAttrValue = opts => {
     if (cur < len && name[cur] == '#') {
       opts.binary = true;
       return parseBinaryAttrValue();
@@ -171,17 +171,17 @@ function parse(name) {
     } else {
       return parseStringAttrValue();
     }
-  }
+  };
 
-  function parseBinaryAttrValue() {
+  const parseBinaryAttrValue = () => {
     const beg = cur++;
     while (cur < len && isAlphaNumeric(name[cur]))
       ++cur;
 
     return name.slice(beg, cur);
-  }
+  };
 
-  function parseQuotedAttrValue() {
+  const parseQuotedAttrValue = () => {
     let str = '';
     ++cur; // Consume the first quote
 
@@ -194,9 +194,9 @@ function parse(name) {
       throw invalidDN(name);
 
     return str;
-  }
+  };
 
-  function parseStringAttrValue() {
+  const parseStringAttrValue = () => {
     const beg = cur;
     let str = '';
     let esc = -1;
@@ -219,14 +219,9 @@ function parse(name) {
         break;
     }
     return str.slice(0, cur - beg);
-  }
+  };
 
-  function atTerminator() {
-    return (cur < len &&
-            (name[cur] === ',' ||
-             name[cur] === ';' ||
-             name[cur] === '+'));
-  }
+  const atTerminator = () => cur < len && (name[cur] === ',' || name[cur] === ';' || name[cur] === '+');
 
   const rdns = [];
 
@@ -245,7 +240,7 @@ function parse(name) {
   }
 
   return new DN(rdns);
-}
+};
 
 class DN {
   constructor(rdns) {

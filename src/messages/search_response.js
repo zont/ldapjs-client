@@ -62,7 +62,7 @@ module.exports = class SearchResponse extends LDAPResult {
       this.sentEntries++;
 
       // Restore attributes
-      Object.keys(savedAttrs || {}).forEach(function (k) {
+      Object.keys(savedAttrs || {}).forEach(k => {
         save.attributes[k] = savedAttrs[k];
       });
 

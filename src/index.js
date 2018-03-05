@@ -41,14 +41,14 @@ let CLIENT_ID = 0;
 
 ///--- Internal Helpers
 
-function nextClientId() {
+const nextClientId = () => {
   if (++CLIENT_ID === MAX_MSGID)
     return 1;
 
   return CLIENT_ID;
-}
+};
 
-function ensureDN(input, strict) {
+const ensureDN = (input, strict) => {
   if (dn.DN.isDN(input)) {
     return dn;
   } else if (strict) {
@@ -58,7 +58,7 @@ function ensureDN(input, strict) {
   } else {
     throw new Error('invalid DN');
   }
-}
+};
 
 class RequestQueue {
   constructor(opts) {
@@ -160,7 +160,7 @@ class MessageTracker {
   }
 
   _purgeAbandoned(msgid) {
-    function geWindow(ref, comp) {
+    const geWindow = (ref, comp) => {
       let max = ref + (MAX_MSGID / 2);
       const min = ref;
       if (max >= MAX_MSGID) {
@@ -169,7 +169,7 @@ class MessageTracker {
       } else {
         return ((comp <= max) && (comp >= min));
       }
-    }
+    };
 
     Object.keys(this._abandoned).forEach(id => {
       if (geWindow(this._abandoned[id].age, msgid)) {
@@ -250,20 +250,17 @@ class Client extends EventEmitter {
     assert.func(callback, 'callback');
 
     if (Array.isArray(entry)) {
-      entry.forEach(function (a) {
-        if (!Attribute.isAttribute(a))
-          throw new TypeError('entry must be an Array of Attributes');
-      });
+      if (entry.some(a => !Attribute.isAttribute(a))) {
+        throw new TypeError('entry must be an Array of Attributes');
+      }
     } else {
       const save = entry;
 
       entry = [];
-      Object.keys(save).forEach(function (k) {
+      Object.keys(save).forEach(k => {
         const attr = new Attribute({ type: k });
         if (Array.isArray(save[k])) {
-          save[k].forEach(function (v) {
-            attr.addValue(v.toString());
-          });
+          save[k].forEach(v => attr.addValue(v.toString()));
         } else {
           attr.addValue(save[k].toString());
         }
@@ -303,7 +300,7 @@ class Client extends EventEmitter {
       value
     });
 
-    return this._send(req, CMP_EXPECT, null, function (err, res) {
+    return this._send(req, CMP_EXPECT, null, (err, res) => {
       if (err)
         return callback(err);
 
@@ -335,7 +332,7 @@ class Client extends EventEmitter {
       requestValue: value
     });
 
-    return this._send(req, [LDAP_SUCCESS], null, function (err, res) {
+    return this._send(req, [LDAP_SUCCESS], null, (err, res) => {
       if (err)
         return callback(err);
 
@@ -349,7 +346,7 @@ class Client extends EventEmitter {
 
     const changes = [];
 
-    function changeFromObject(change) {
+    const changeFromObject = change => {
       if (!change.operation && !change.type)
         throw new Error('change.operation required');
       if (typeof (change.modification) !== 'object')
@@ -364,7 +361,7 @@ class Client extends EventEmitter {
         }));
       } else {
         // Normalize the modification object
-        Object.keys(change.modification).forEach(function (k) {
+        Object.keys(change.modification).forEach(k => {
           const mod = {};
           mod[k] = change.modification[k];
           changes.push(new Change({
@@ -373,12 +370,12 @@ class Client extends EventEmitter {
           }));
         });
       }
-    }
+    };
 
     if (Change.isChange(change)) {
       changes.push(change);
     } else if (Array.isArray(change)) {
-      change.forEach(function (c) {
+      change.forEach(c => {
         if (Change.isChange(c)) {
           changes.push(c);
         } else {
@@ -471,7 +468,7 @@ class Client extends EventEmitter {
 
   unbind(callback) {
     if (!callback)
-      callback = function () { };
+      callback = () => { };
 
     if (typeof (callback) !== 'function')
       throw new TypeError('callback must be a function');
@@ -512,7 +509,7 @@ class Client extends EventEmitter {
 
         options.socket = this._socket;
         const secure = tls.connect(options);
-        secure.once('secureConnect', function () {
+        secure.once('secureConnect', () => {
           secure.removeAllListeners('error');
           secure.on('data', data => this._tracker.parser.write(data));
           secure.on('error', err => {
@@ -541,7 +538,7 @@ class Client extends EventEmitter {
     this.destroyed = true;
     this.queue.freeze();
     // Purge any queued requests which are now meaningless
-    this.queue.flush(function (msg, expect, emitter, cb) {
+    this.queue.flush((msg, expect, emitter, cb) => {
       if (typeof (cb) === 'function') {
         cb(new Error('client destroyed'));
       }
@@ -749,7 +746,7 @@ class Client extends EventEmitter {
     ((socket.socket) ? socket.socket : socket).removeAllListeners('close');
 
     this.emit('close', had_err);
-    tracker.pending.forEach(function (msgid) {
+    tracker.pending.forEach(msgid => {
       const cb = tracker.fetch(msgid);
       tracker.remove(msgid);
 

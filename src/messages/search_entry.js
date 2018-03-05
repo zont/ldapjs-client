@@ -29,13 +29,9 @@ module.exports = class SearchEntry extends LDAPMessage {
     const obj = {
       dn: this.dn.toString()
     };
-    this.attributes.forEach(function (a) {
+    this.attributes.forEach(a => {
       if (a.vals && a.vals.length) {
-        if (a.vals.length > 1) {
-          obj[a.type] = a.vals.slice();
-        } else {
-          obj[a.type] = a.vals[0];
-        }
+        obj[a.type] = a.vals.length > 1 ? a.vals.slice() : a.vals[0];
       } else {
         obj[a.type] = [];
       }
@@ -48,13 +44,9 @@ module.exports = class SearchEntry extends LDAPMessage {
       dn: this.dn.toString()
     };
 
-    this.attributes.forEach(function (a) {
+    this.attributes.forEach(a => {
       if (a.buffers && a.buffers.length) {
-        if (a.buffers.length > 1) {
-          obj[a.type] = a.buffers.slice();
-        } else {
-          obj[a.type] = a.buffers[0];
-        }
+        obj[a.type] = a.buffers.length > 1 ? a.buffers.slice() : a.buffers[0];
       } else {
         obj[a.type] = [];
       }
@@ -91,10 +83,9 @@ module.exports = class SearchEntry extends LDAPMessage {
     }
 
     if (Array.isArray(obj)) {
-      obj.forEach(function (a) {
-        if (!Attribute.isAttribute(a))
-          throw new TypeError('entry must be an Array of Attributes');
-      });
+      if (obj.some(a => !Attribute.isAttribute(a))) {
+        throw new TypeError('entry must be an Array of Attributes');
+      }
       this.attributes = obj;
     } else {
       this.attributes = [];
@@ -140,9 +131,7 @@ module.exports = class SearchEntry extends LDAPMessage {
 
     ber.writeString(this.objectName.toString());
     ber.startSequence();
-    this.attributes.forEach(function (a) {
-      ber = Attribute.toBer(a, ber);
-    });
+    ber = this.attributes.reduce((ber, a) => Attribute.toBer(a, ber), ber);
     ber.endSequence();
 
     return ber;

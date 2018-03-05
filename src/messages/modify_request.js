@@ -49,9 +49,7 @@ module.exports = class ModifyRequest extends LDAPMessage {
 
     ber.writeString(this.object.toString());
     ber.startSequence();
-    this.changes.forEach(function (c) {
-      c.toBer(ber);
-    });
+    this.changes.forEach(c => c.toBer(ber));
     ber.endSequence();
 
     return ber;

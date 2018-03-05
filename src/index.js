@@ -160,7 +160,6 @@ class MessageTracker {
   }
 
   _purgeAbandoned(msgid) {
-    const self = this;
     function geWindow(ref, comp) {
       let max = ref + (MAX_MSGID / 2);
       const min = ref;
@@ -172,11 +171,10 @@ class MessageTracker {
       }
     }
 
-    Object.keys(this._abandoned).forEach(function (id) {
-      if (geWindow(self._abandoned[id].age, msgid)) {
-        self._abandoned[id].cb(new AbandonedError(
-          'client request abandoned'));
-        delete self._abandoned[id];
+    Object.keys(this._abandoned).forEach(id => {
+      if (geWindow(this._abandoned[id].age, msgid)) {
+        this._abandoned[id].cb(new AbandonedError('client request abandoned'));
+        delete this._abandoned[id];
       }
     });
   }
@@ -491,63 +489,52 @@ class Client extends EventEmitter {
     assert.optionalObject(options);
     options = options || {};
     callback = once(callback);
-    const self = this;
 
     if (this._starttls) {
       return callback(new Error('STARTTLS already in progress or active'));
     }
 
-    function onSend(err, emitter) {
+    const onSend = (err, emitter) => {
       if (err) {
         callback(err);
         return;
       }
-      self._starttls = {
-        started: true
-      };
 
-      emitter.on('error', function (err) {
-        self._starttls = null;
+      this._starttls = { started: true };
+
+      emitter.on('error', err => {
+        this._starttls = null;
         callback(err);
       });
-      emitter.on('end', function () {
-        const sock = self._socket;
-        sock.removeAllListeners('data');
 
-        options.socket = sock;
+      emitter.on('end', () => {
+        this._socket.removeAllListeners('data');
+
+        options.socket = this._socket;
         const secure = tls.connect(options);
         secure.once('secureConnect', function () {
           secure.removeAllListeners('error');
-          secure.on('data', function onData(data) {
-            self._tracker.parser.write(data);
-          });
-          secure.on('error', function (err) {
-            self.emit('error', err);
-            sock.destroy();
+          secure.on('data', data => this._tracker.parser.write(data));
+          secure.on('error', err => {
+            this.emit('error', err);
+            this._socket.destroy();
           });
           callback(null);
         });
-        secure.once('error', function (err) {
+        secure.once('error', err => {
           // If the SSL negotiation failed, to back to plain mode.
-          self._starttls = null;
+          this._starttls = null;
           secure.removeAllListeners();
           callback(err);
         });
-        self._starttls.success = true;
-        self._socket = secure;
+        this._starttls.success = true;
+        this._socket = secure;
       });
-    }
+    };
 
-    const req = new ExtendedRequest({
-      requestName: '1.3.6.1.4.1.1466.20037',
-      requestValue: null
-    });
+    const req = new ExtendedRequest({ requestName: '1.3.6.1.4.1.1466.20037', requestValue: null });
 
-    return this._send(req,
-      [LDAP_SUCCESS],
-      new EventEmitter(),
-      onSend,
-      _bypass);
+    return this._send(req, [LDAP_SUCCESS], new EventEmitter(), onSend, _bypass);
   }
 
   destroy(err) {
@@ -571,27 +558,27 @@ class Client extends EventEmitter {
     if (this.connecting || this.connected) {
       return;
     }
-    const self = this;
     let socket;
     let tracker;
 
-    function connectSocket(cb) {
+    const connectSocket = cb => {
       cb = once(cb);
 
-      function onResult(err, res) {
+      const onResult = (err, res) => {
         if (err) {
-          if (self.connectTimer) {
-            clearTimeout(self.connectTimer);
-            self.connectTimer = null;
+          if (this.connectTimer) {
+            clearTimeout(this.connectTimer);
+            this.connectTimer = null;
           }
-          self.emit('connectError', err);
+          this.emit('connectError', err);
         }
         cb(err, res);
-      }
-      function onConnect() {
-        if (self.connectTimer) {
-          clearTimeout(self.connectTimer);
-          self.connectTimer = null;
+      };
+
+      const onConnect = () => {
+        if (this.connectTimer) {
+          clearTimeout(this.connectTimer);
+          this.connectTimer = null;
         }
         socket.removeAllListeners('error')
           .removeAllListeners('connect')
@@ -601,49 +588,44 @@ class Client extends EventEmitter {
 
         // Move on to client setup
         setupClient(cb);
-      }
+      };
 
-      const port = (self.port || self.socketPath);
-      if (self.secure) {
-        socket = tls.connect(port, self.host, self.tlsOptions);
+      const port = this.port || this.socketPath;
+      if (this.secure) {
+        socket = tls.connect(port, this.host, this.tlsOptions);
         socket.once('secureConnect', onConnect);
       } else {
-        socket = net.connect(port, self.host);
+        socket = net.connect(port, this.host);
         socket.once('connect', onConnect);
       }
       socket.once('error', onResult);
       initSocket();
 
-      if (self.connectTimeout) {
-        self.connectTimer = setTimeout(function onConnectTimeout() {
+      if (this.connectTimeout) {
+        this.connectTimer = setTimeout(() => {
           if (!socket || !socket.readable || !socket.writeable) {
             socket.destroy();
-            self._socket = null;
+            this._socket = null;
             onResult(new ConnectionError('connection timeout'));
           }
-        }, self.connectTimeout);
+        }, this.connectTimeout);
       }
-    }
+    };
 
-    function initSocket() {
+    const initSocket = () => {
       tracker = new MessageTracker({
-        id: self.url ? self.url.href : self.socketPath,
+        id: this.url ? this.url.href : this.socketPath,
         parser: new Parser()
       });
 
-      if (typeof (socket.setKeepAlive) !== 'function') {
-        socket.setKeepAlive = function setKeepAlive(enable, delay) {
-          return socket.socket ?
-            socket.socket.setKeepAlive(enable, delay) : false;
-        };
+      if (typeof socket.setKeepAlive !== 'function') {
+        socket.setKeepAlive = (enable, delay) => socket.socket ? socket.socket.setKeepAlive(enable, delay) : false;
       }
 
-      socket.on('data', function onData(data) {
-        tracker.parser.write(data);
-      });
+      socket.on('data', data => tracker.parser.write(data));
 
-      tracker.parser.on('message', function onMessage(message) {
-        message.connection = self._socket;
+      tracker.parser.on('message', message => {
+        message.connection = this._socket;
         const callback = tracker.fetch(message.messageID);
 
         if (!callback) {
@@ -653,118 +635,94 @@ class Client extends EventEmitter {
         return callback(message);
       });
 
-      tracker.parser.on('error', function onParseError(err) {
-        self.emit('error', err);
-        self.connected = false;
+      tracker.parser.on('error', err => {
+        this.emit('error', err);
+        this.connected = false;
         socket.end();
       });
-    }
+    };
 
-    function setupClient(cb) {
+    const setupClient = cb => {
       cb = once(cb);
 
-      function bail(err) {
+      const bail = err => {
         socket.destroy();
         cb(err || new Error('client error during setup'));
-      }
+      };
+
       ((socket.socket) ? socket.socket : socket).once('close', bail);
       socket.once('error', bail);
       socket.once('end', bail);
       socket.once('timeout', bail);
 
-      self._socket = socket;
-      self._tracker = tracker;
+      this._socket = socket;
+      this._tracker = tracker;
 
       const basicClient = {
-        bind: function bindBypass(name, credentials,  callback) {
-          return self.bind(name, credentials, callback, true);
-        },
-        search: function searchBypass(base, options, callback) {
-          return self.search(base, options, callback, true);
-        },
-        starttls: function starttlsBypass(options, callback) {
-          return self.starttls(options, callback, true);
-        },
-        unbind: self.unbind.bind(self)
+        bind: (name, credentials, callback) => this.bind(name, credentials, callback, true),
+        search: (base, options, callback) => this.search(base, options, callback, true),
+        starttls: (options, callback) => this.starttls(options, callback, true),
+        unbind: () => this.unbind()
       };
+
       vasync.forEachPipeline({
-        func: function (f, callback) {
-          f(basicClient, callback);
-        },
-        inputs: self.listeners('setup')
-      }, function (err) {
+        func: (f, callback) => f(basicClient, callback),
+        inputs: this.listeners('setup')
+      }, err => {
         if (err) {
-          self.emit('setupError', err);
+          this.emit('setupError', err);
         }
         cb(err);
       });
-    }
+    };
 
-    function postSetup() {
+    const postSetup = () => {
       socket.removeAllListeners('error')
         .removeAllListeners('close')
         .removeAllListeners('end')
         .removeAllListeners('timeout');
 
-      ((socket.socket) ? socket.socket : socket).once('close', self._onClose.bind(self));
-      socket.on('end', function onEnd() {
-        self.emit('end');
+      ((socket.socket) ? socket.socket : socket).once('close', () => this._onClose());
+      socket.on('end', () => {
+        this.emit('end');
         socket.end();
       });
-      socket.on('error', function onSocketError(err) {
-        self.emit('error', err);
+      socket.on('error', err => {
+        this.emit('error', err);
         socket.destroy();
       });
-      socket.on('timeout', function onTimeout() {
-        self.emit('socketTimeout');
+      socket.on('timeout', () => {
+        this.emit('socketTimeout');
         socket.end();
       });
-    }
+    };
 
-    let retry;
-    let failAfter;
-    if (this.reconnect) {
-      retry = backoff.exponential({
-        initialDelay: this.reconnect.initialDelay,
-        maxDelay: this.reconnect.maxDelay
-      });
-      failAfter = this.reconnect.failAfter;
-    } else {
-      retry = backoff.exponential({
-        initialDelay: 1,
-        maxDelay: 2
-      });
-      failAfter = 1;
-    }
-    retry.failAfter(failAfter);
-
-    retry.on('ready', function () {
-      if (self.destroyed) {
+    const retry = backoff.exponential(Object.assign({ initialDelay: 1, maxDelay: 2 }, this.reconnect));
+    retry.failAfter(this.reconnect ? this.reconnect.failAfter : 1);
+    retry.on('ready', () => {
+      if (this.destroyed) {
         return;
       }
-      connectSocket(function (err) {
+
+      connectSocket(err => {
         if (!err) {
           postSetup();
-          self.connecting = false;
-          self.connected = true;
-          self.emit('connect', socket);
+          this.connecting = false;
+          this.connected = true;
+          this.emit('connect', socket);
           // Flush any queued requests
-          self._flushQueue();
-          self._connectRetry = null;
+          this._flushQueue();
+          this._connectRetry = null;
         } else {
           retry.backoff(err);
         }
       });
     });
-    retry.on('fail', function (err) {
-      if (self.destroyed) {
+    retry.on('fail', err => {
+      if (this.destroyed) {
         return;
       }
-      if (err instanceof ConnectionError) {
-        self.emit('connectTimeout', err);
-      } else {
-        self.emit('error', err);
-      }
+      this.emit(err instanceof ConnectionError ? 'connectTimeout' : 'error', err);
     });
 
     this._connectRetry = retry;
@@ -819,25 +777,20 @@ class Client extends EventEmitter {
     if (this.idleTimeout === 0) {
       return;
     }
-    const self = this;
-    function isIdle(disable) {
-      return ((disable !== true) &&
-        (self._socket && self.connected) &&
-        (self._tracker.pending.length === 0));
-    }
+
+    const isIdle = disable => disable !== true && this._socket && this.connected && this._tracker.pending.length === 0;
+
     if (isIdle(override)) {
       if (!this._idleTimer) {
-        this._idleTimer = setTimeout(function () {
+        this._idleTimer = setTimeout(() => {
           if (isIdle()) {
-            self.emit('idle');
+            this.emit('idle');
           }
         }, this.idleTimeout);
       }
-    } else {
-      if (this._idleTimer) {
-        clearTimeout(this._idleTimer);
-        this._idleTimer = null;
-      }
+    } else if (this._idleTimer) {
+      clearTimeout(this._idleTimer);
+      this._idleTimer = null;
     }
   }
 
@@ -865,15 +818,12 @@ class Client extends EventEmitter {
   }
 
   _sendSocket(message, expect, emitter, callback) {
-    const conn = this._socket;
-    const tracker = this._tracker;
-    const self = this;
     let timer = false;
     let sentEmitter = false;
 
-    function sendResult(event, obj) {
-      if (event === 'error' && self.listeners('resultError')) {
-        self.emit('resultError', obj);
+    const sendResult = (event, obj) => {
+      if (event === 'error' && this.listeners('resultError')) {
+        this.emit('resultError', obj);
       }
       if (emitter) {
         if (event === 'error') {
@@ -887,9 +837,9 @@ class Client extends EventEmitter {
         return callback(obj);
 
       return callback(null, obj);
-    }
+    };
 
-    function messageCallback(msg) {
+    const messageCallback = msg => {
       if (timer)
         clearTimeout(timer);
 
@@ -900,8 +850,8 @@ class Client extends EventEmitter {
         const event = msg.constructor.name;
         return sendResult(event[0].toLowerCase() + event.slice(1), msg);
       } else {
-        tracker.remove(message.messageID);
-        self._updateIdle();
+        this._tracker.remove(message.messageID);
+        this._updateIdle();
 
         if (msg instanceof LDAPResult) {
           if (expect.indexOf(msg.status) === -1) {
@@ -914,43 +864,43 @@ class Client extends EventEmitter {
           return sendResult('error', new ProtocolError(msg.type));
         }
       }
-    }
+    };
 
-    function onRequestTimeout() {
-      self.emit('timeout', message);
-      const cb = tracker.fetch(message.messageID);
+    const onRequestTimeout = () => {
+      this.emit('timeout', message);
+      const cb = this._tracker.fetch(message.messageID);
       if (cb) {
         cb(new TimeoutError('request timeout (client interrupt)'));
       }
-    }
+    };
 
-    function writeCallback() {
+    const writeCallback = () => {
       if (expect === 'abandon') {
-        tracker.abandon(message.abandonID);
-        tracker.remove(message.id);
+        this._tracker.abandon(message.abandonID);
+        this._tracker.remove(message.id);
         return callback(null);
       } else if (expect === 'unbind') {
-        conn.unbindMessageID = message.id;
-        self.connected = false;
-        conn.removeAllListeners('error');
-        conn.on('error', function () { });
-        conn.end();
+        this._socket.unbindMessageID = message.id;
+        this.connected = false;
+        this._socket.removeAllListeners('error');
+        this._socket.on('error', () => { });
+        this._socket.end();
       } else if (emitter) {
         sentEmitter = true;
         return callback(null, emitter);
       }
       return false;
-    }
+    };
 
-    tracker.track(message, messageCallback);
+    this._tracker.track(message, messageCallback);
     this._updateIdle(true);
 
-    if (self.timeout) {
-      timer = setTimeout(onRequestTimeout, self.timeout);
+    if (this.timeout) {
+      timer = setTimeout(onRequestTimeout, this.timeout);
     }
 
     try {
-      return conn.write(message.toBer(), writeCallback);
+      return this._socket.write(message.toBer(), writeCallback);
     } catch (e) {
       if (timer)
         clearTimeout(timer);

@@ -94,10 +94,6 @@ module.exports = class SearchResponse extends LDAPResult {
         uris[i] = parseURL(uris[i]);
     }
 
-    const self = this;
-    return new SearchReference({
-      messageID: self.messageID,
-      uris: uris
-    });
+    return new SearchReference({ messageID: this.messageID, uris });
   }
 };

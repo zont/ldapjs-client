@@ -97,19 +97,15 @@ module.exports = class SearchEntry extends LDAPMessage {
       });
       this.attributes = obj;
     } else {
-      const self = this;
-
-      self.attributes = [];
-      Object.keys(obj).forEach(function (k) {
-        const attr = new Attribute({type: k});
+      this.attributes = [];
+      Object.keys(obj).forEach(k => {
+        const attr = new Attribute({ type: k });
         if (Array.isArray(obj[k])) {
-          obj[k].forEach(function (v) {
-            attr.addValue(v.toString());
-          });
+          obj[k].forEach(v => attr.addValue(v.toString()));
         } else {
           attr.addValue(obj[k].toString());
         }
-        self.attributes.push(attr);
+        this.attributes.push(attr);
       });
     }
   }

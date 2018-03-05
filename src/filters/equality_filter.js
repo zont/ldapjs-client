@@ -1,59 +1,45 @@
-var assert = require('assert-plus');
-var util = require('util');
-var ASN1 = require('asn1').Ber;
-var parents = require('ldap-filter');
-var Filter = require('./filter');
+const assert = require('assert-plus');
+const { Ber: { OctetString } } = require('asn1');
+const parents = require('ldap-filter');
+const Filter = require('./filter');
 
+class EqualityFilter extends parents.EqualityFilter {
+  matches(target, strictAttrCase) {
+    assert.object(target, 'target');
 
-function EqualityFilter(options) {
-  parents.EqualityFilter.call(this, options);
-}
-util.inherits(EqualityFilter, parents.EqualityFilter);
-Filter.mixin(EqualityFilter);
-module.exports = EqualityFilter;
+    const tv = parents.getAttrValue(target, this.attribute, strictAttrCase);
+    const value = this.value;
 
-
-EqualityFilter.prototype.matches = function (target, strictAttrCase) {
-  assert.object(target, 'target');
-
-  var tv = parents.getAttrValue(target, this.attribute, strictAttrCase);
-  var value = this.value;
-
-  if (this.attribute.toLowerCase() === 'objectclass') {
-    /*
-     * Perform case-insensitive match for objectClass since nearly every LDAP
-     * implementation behaves in this manner.
-     */
-    value = value.toLowerCase();
-    return parents.testValues(function (v) {
-      return value === v.toLowerCase();
-    }, tv);
-  } else {
-    return parents.testValues(function (v) {
-      return value === v;
-    }, tv);
+    if (this.attribute.toLowerCase() === 'objectclass') {
+      return parents.testValues(v => value.toLowerCase() === v.toLowerCase(), tv);
+    } else {
+      return parents.testValues(v => value === v, tv);
+    }
   }
-};
 
+  parse(ber) {
+    assert.ok(ber);
 
-EqualityFilter.prototype.parse = function (ber) {
-  assert.ok(ber);
+    this.attribute = ber.readString().toLowerCase();
+    this.value = ber.readString(OctetString, true);
 
-  this.attribute = ber.readString().toLowerCase();
-  this.value = ber.readString(ASN1.OctetString, true);
+    if (this.attribute === 'objectclass') {
+      this.value = this.value.toLowerCase();
+    }
 
-  if (this.attribute === 'objectclass')
-    this.value = this.value.toLowerCase();
+    return true;
+  }
 
-  return true;
-};
+  _toBer(ber) {
+    assert.ok(ber);
 
+    ber.writeString(this.attribute);
+    ber.writeBuffer(this.raw, OctetString);
 
-EqualityFilter.prototype._toBer = function (ber) {
-  assert.ok(ber);
+    return ber;
+  }
+}
 
-  ber.writeString(this.attribute);
-  ber.writeBuffer(this.raw, ASN1.OctetString);
+Filter.mixin(EqualityFilter);
 
-  return ber;
-};
+module.exports = EqualityFilter;

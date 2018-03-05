@@ -1,22 +1,14 @@
 const assert = require('assert');
-const util = require('util');
 const parents = require('ldap-filter');
 const Filter = require('./filter');
 
-function AndFilter(options) {
-  parents.AndFilter.call(this, options);
+class AndFilter extends parents.AndFilter {
+  _toBer(ber) {
+    assert.ok(ber);
+    return this.filters.reduce((ber, f) => f.toBer(ber), ber);
+  }
 }
-util.inherits(AndFilter, parents.AndFilter);
+
 Filter.mixin(AndFilter);
+
 module.exports = AndFilter;
-
-
-AndFilter.prototype._toBer = function (ber) {
-  assert.ok(ber);
-
-  this.filters.forEach(function (f) {
-    ber = f.toBer(ber);
-  });
-
-  return ber;
-};

@@ -1,21 +1,14 @@
-var assert = require('assert');
-var util = require('util');
-var parents = require('ldap-filter');
-var Filter = require('./filter');
+const assert = require('assert');
+const parents = require('ldap-filter');
+const Filter = require('./filter');
 
-function OrFilter(options) {
-  parents.OrFilter.call(this, options);
+class OrFilter extends parents.OrFilter {
+  _toBer(ber) {
+    assert.ok(ber);
+    return this.filters.reduce((ber, f) => f.toBer(ber), ber);
+  }
 }
-util.inherits(OrFilter, parents.OrFilter);
+
 Filter.mixin(OrFilter);
+
 module.exports = OrFilter;
-
-OrFilter.prototype._toBer = function (ber) {
-  assert.ok(ber);
-
-  this.filters.forEach(function (f) {
-    ber = f.toBer(ber);
-  });
-
-  return ber;
-};

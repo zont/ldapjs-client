@@ -1,30 +1,27 @@
-var assert = require('assert');
-var util = require('util');
-var parents = require('ldap-filter');
-var Filter = require('./filter');
+const assert = require('assert');
+const parents = require('ldap-filter');
+const Filter = require('./filter');
 
-function GreaterThanEqualsFilter(options) {
-  parents.GreaterThanEqualsFilter.call(this, options);
+class GreaterThanEqualsFilter extends parents.GreaterThanEqualsFilter {
+  parse(ber) {
+    assert.ok(ber);
+
+    this.attribute = ber.readString().toLowerCase();
+    this.value = ber.readString();
+
+    return true;
+  }
+
+  _toBer(ber) {
+    assert.ok(ber);
+
+    ber.writeString(this.attribute);
+    ber.writeString(this.value);
+
+    return ber;
+  }
 }
-util.inherits(GreaterThanEqualsFilter, parents.GreaterThanEqualsFilter);
+
 Filter.mixin(GreaterThanEqualsFilter);
+
 module.exports = GreaterThanEqualsFilter;
-
-
-GreaterThanEqualsFilter.prototype.parse = function (ber) {
-  assert.ok(ber);
-
-  this.attribute = ber.readString().toLowerCase();
-  this.value = ber.readString();
-
-  return true;
-};
-
-GreaterThanEqualsFilter.prototype._toBer = function (ber) {
-  assert.ok(ber);
-
-  ber.writeString(this.attribute);
-  ber.writeString(this.value);
-
-  return ber;
-};

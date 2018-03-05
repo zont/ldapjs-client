@@ -1,18 +1,14 @@
-var assert = require('assert');
-var util = require('util');
-var parents = require('ldap-filter');
-var Filter = require('./filter');
+const assert = require('assert');
+const parents = require('ldap-filter');
+const Filter = require('./filter');
 
-function NotFilter(options) {
-  parents.NotFilter.call(this, options);
+class NotFilter extends parents.NotFilter {
+  _toBer(ber) {
+    assert.ok(ber);
+    return this.filter.toBer(ber);
+  }
 }
-util.inherits(NotFilter, parents.NotFilter);
+
 Filter.mixin(NotFilter);
+
 module.exports = NotFilter;
-
-
-NotFilter.prototype._toBer = function (ber) {
-  assert.ok(ber);
-
-  return this.filter.toBer(ber);
-};

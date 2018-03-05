@@ -14,7 +14,6 @@ var OrFilter = require('./or_filter');
 var PresenceFilter = require('./presence_filter');
 var SubstringFilter = require('./substr_filter');
 
-
 function _parse(ber) {
   assert.ok(ber);
 
@@ -90,7 +89,6 @@ function _parse(ber) {
   return f;
 }
 
-
 function cloneFilter(input) {
   var child;
   if (input.type === 'and' || input.type === 'or') {
@@ -124,35 +122,18 @@ function cloneFilter(input) {
   }
 }
 
-
-function parseString(str) {
-  var generic = parents.parse(str);
-  return cloneFilter(generic);
-}
-
-
-///--- API
-
 module.exports = {
-  parse: function (ber) {
+  parse(ber) {
     if (!ber || !(ber instanceof BerReader))
       throw new TypeError('ber (BerReader) required');
 
     return _parse(ber);
   },
 
-  parseString: parseString,
+  parseString(str) {
+    return cloneFilter(parents.parse(str));
+  },
 
   isFilter: Filter.isFilter,
-
-  AndFilter: AndFilter,
-  ApproximateFilter: ApproximateFilter,
-  EqualityFilter: EqualityFilter,
-  ExtensibleFilter: ExtensibleFilter,
-  GreaterThanEqualsFilter: GreaterThanEqualsFilter,
-  LessThanEqualsFilter: LessThanEqualsFilter,
-  NotFilter: NotFilter,
-  OrFilter: OrFilter,
-  PresenceFilter: PresenceFilter,
-  SubstringFilter: SubstringFilter
+  PresenceFilter
 };

@@ -55,10 +55,7 @@ module.exports = class SearchEntry extends LDAPMessage {
   }
 
   addAttribute(attr) {
-    if (!attr || typeof attr !== 'object') {
-      throw new TypeError('attr (attribute) required');
-    }
-
+    assert.object(attr, 'attr');
     this.attributes.push(attr);
   }
 
@@ -67,9 +64,7 @@ module.exports = class SearchEntry extends LDAPMessage {
   }
 
   fromObject(obj) {
-    if (typeof obj !== 'object') {
-      throw new TypeError('object required');
-    }
+    assert.object(obj);
 
     obj = obj.attributes || obj;
     this.attributes = Object.keys(obj).map(type => new Attribute({ type, vals: obj[type] }));
@@ -78,9 +73,7 @@ module.exports = class SearchEntry extends LDAPMessage {
   }
 
   setAttributes(obj) {
-    if (typeof obj !== 'object') {
-      throw new TypeError('object required');
-    }
+    assert.object(obj);
 
     if (Array.isArray(obj)) {
       if (obj.some(a => !Attribute.isAttribute(a))) {

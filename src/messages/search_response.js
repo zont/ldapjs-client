@@ -16,10 +16,8 @@ module.exports = class SearchResponse extends LDAPResult {
   }
 
   send(entry, nofiltering = false) {
-    if (!entry || typeof entry !== 'object')
-      throw new TypeError('entry (SearchEntry) required');
-    if (typeof nofiltering !== 'boolean')
-      throw new TypeError('noFiltering must be a boolean');
+    assert.object(entry, 'entry');
+    assert.bool(nofiltering, 'nofiltering');
 
     const savedAttrs = {};
     const save = entry;
@@ -27,11 +25,9 @@ module.exports = class SearchResponse extends LDAPResult {
     if (entry instanceof SearchEntry || entry instanceof SearchReference) {
       if (!entry.messageID)
         entry.messageID = this.messageID;
-      if (entry.messageID !== this.messageID)
-        throw new Error('SearchEntry messageID mismatch');
+      assert.ok(entry.messageID === this.messageID, 'SearchEntry messageID mismatch');
     } else {
-      if (!entry.attributes)
-        throw new Error('entry.attributes required');
+      assert.ok(entry.attributes, 'entry.attributes required');
 
       const all = (this.attributes.indexOf('*') !== -1);
       Object.keys(entry.attributes).forEach(a => {
@@ -83,8 +79,7 @@ module.exports = class SearchResponse extends LDAPResult {
   }
 
   createSearchReference(uris) {
-    if (!uris)
-      throw new TypeError('uris ([string]) required');
+    assert.ok(uris, 'uris ([string]) required');
 
     if (!Array.isArray(uris))
       uris = [uris];

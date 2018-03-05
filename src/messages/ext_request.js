@@ -7,11 +7,8 @@ module.exports = class ExtendedRequest extends LDAPMessage {
     options = options || {};
     assert.object(options);
     assert.optionalString(options.requestName);
-    if (options.requestValue &&
-      !(Buffer.isBuffer(options.requestValue) ||
-        typeof (options.requestValue) === 'string')) {
-      throw new TypeError('options.requestValue must be a buffer or a string');
-    }
+    assert.optionalBuffer(options.requestValue);
+    assert.optionalString(options.requestValue);
 
     options.protocolOp = Protocol.LDAP_REQ_EXTENSION;
     super(options);
@@ -42,9 +39,7 @@ module.exports = class ExtendedRequest extends LDAPMessage {
   }
 
   set value(val) {
-    if (!(Buffer.isBuffer(val) || typeof (val) === 'string'))
-      throw new TypeError('value must be a buffer or a string');
-
+    assert.ok(Buffer.isBuffer(val) || typeof val === 'string', 'value must be a buffer or a string');
     this.requestValue = val;
   }
 

@@ -1,3 +1,4 @@
+const assert = require('assert-plus');
 const { BerWriter } = require('asn1');
 const Protocol = require('../protocol');
 
@@ -26,12 +27,12 @@ module.exports = {
 
   mixin(target) {
     target.prototype.toBer = function(ber) {
-      if (!ber || !(ber instanceof BerWriter))
-        throw new TypeError('ber (BerWriter) required');
+      assert.ok(ber instanceof BerWriter, 'ber (BerWriter) required');
 
       ber.startSequence(TYPES[this.type]);
       ber = this._toBer(ber);
       ber.endSequence();
+
       return ber;
     };
   }

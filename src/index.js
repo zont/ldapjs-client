@@ -53,10 +53,29 @@ const ensureDN = (input, strict) => {
     return dn;
   } else if (strict) {
     return dn.parse(input);
-  } else if (typeof (input) === 'string') {
+  } else if (typeof input === 'string') {
     return input;
   } else {
     throw new Error('invalid DN');
+  }
+};
+
+const changeFromObject = change => {
+  assert.ok(change.operation || change.type, 'change.operation required');
+  assert.object(change.modification, 'change.modification');
+
+  if (Object.keys(change.modification).length == 2 && typeof change.modification.type === 'string' && Array.isArray(change.modification.vals)) {
+    return [new Change({
+      operation: change.operation || change.type,
+      modification: change.modification
+    })];
+  } else {
+    return Object.keys(change.modification).map(k => new Change({
+      operation: change.operation || change.type,
+      modification: {
+        [k]: change.modification[k]
+      }
+    }));
   }
 };
 
@@ -109,13 +128,11 @@ class Client extends EventEmitter {
     this.connect();
   }
 
-  abandon(messageID, callback) {
-    assert.number(messageID, 'messageID');
+  abandon(abandonID, callback) {
+    assert.number(abandonID, 'messageID');
     assert.func(callback, 'callback');
 
-    const req = new AbandonRequest({ abandonID: messageID });
-
-    return this._send(req, 'abandon', null, callback);
+    return this._send(new AbandonRequest({ abandonID }), 'abandon', null, callback);
   }
 
   add(name, entry, callback) {
@@ -148,8 +165,7 @@ class Client extends EventEmitter {
   }
 
   bind(name, credentials, callback, _bypass) {
-    if (typeof (name) !== 'string' && !(name instanceof dn.DN))
-      throw new TypeError('name (string) required');
+    assert.ok(typeof name === 'string' || name instanceof dn.DN, 'name (string) required');
     assert.optionalString(credentials, 'credentials');
     assert.func(callback, 'callback');
 
@@ -191,26 +207,18 @@ class Client extends EventEmitter {
     return this._send(req, [LDAP_SUCCESS], null, callback);
   }
 
-  exop(name, value, callback) {
-    assert.string(name, 'name');
-    if (typeof (value) === 'function') {
-      callback = value;
-      value = '';
+  exop(requestName, requestValue, callback) {
+    if (typeof requestValue === 'function') {
+      callback = requestValue;
+      requestValue = '';
     }
-    if (!(Buffer.isBuffer(value) || typeof (value) === 'string'))
-      throw new TypeError('value (Buffer || string) required');
+
+    assert.string(requestName, 'name');
+    assert.ok(Buffer.isBuffer(requestValue) || typeof requestValue === 'string', 'value (Buffer || string) required');
     assert.func(callback, 'callback');
 
-    const req = new ExtendedRequest({
-      requestName: name,
-      requestValue: value
-    });
-
-    return this._send(req, [LDAP_SUCCESS], null, (err, res) => {
-      if (err)
-        return callback(err);
-
-      return callback(null, res.responseValue || '', res);
+    return this._send(new ExtendedRequest({ requestName, requestValue }), [LDAP_SUCCESS], null, (err, res) => {
+      return err ? callback(err) : callback(null, res.responseValue || '', res);
     });
   }
 
@@ -219,33 +227,6 @@ class Client extends EventEmitter {
     assert.object(change, 'change');
 
     const changes = [];
-
-    const changeFromObject = change => {
-      if (!change.operation && !change.type)
-        throw new Error('change.operation required');
-      if (typeof (change.modification) !== 'object')
-        throw new Error('change.modification (object) required');
-
-      if (Object.keys(change.modification).length == 2 &&
-        typeof (change.modification.type) === 'string' &&
-        Array.isArray(change.modification.vals)) {
-        changes.push(new Change({
-          operation: change.operation || change.type,
-          modification: change.modification
-        }));
-      } else {
-        // Normalize the modification object
-        Object.keys(change.modification).forEach(k => {
-          const mod = {};
-          mod[k] = change.modification[k];
-          changes.push(new Change({
-            operation: change.operation || change.type,
-            modification: mod
-          }));
-        });
-      }
-    };
-
     if (Change.isChange(change)) {
       changes.push(change);
     } else if (Array.isArray(change)) {
@@ -253,11 +234,11 @@ class Client extends EventEmitter {
         if (Change.isChange(c)) {
           changes.push(c);
         } else {
-          changeFromObject(c);
+          changes.push(...changeFromObject(c));
         }
       });
     } else {
-      changeFromObject(change);
+      changes.push(...changeFromObject(change));
     }
 
     assert.func(callback, 'callback');
@@ -294,17 +275,17 @@ class Client extends EventEmitter {
   }
 
   search(base, options, callback, _bypass) {
-    assert.ok(base !== undefined, 'search base');
-    if (typeof (options) === 'function') {
+    if (typeof options === 'function') {
       callback = options;
-      options = {
-        filter: new PresenceFilter({ attribute: 'objectclass' })
-      };
-    } else if (typeof (options) === 'string') {
-      options = { filter: parseString(options) };
-    } else if (typeof (options) !== 'object') {
-      throw new TypeError('options (object) required');
+      options = {};
+    } else if (typeof options === 'string') {
+      options = { filter: options };
     }
+
+    assert.ok(base, 'search base');
+    assert.object(options, 'options');
+    assert.func(callback, 'callback');
+
     if (typeof (options.filter) === 'string') {
       options.filter = parseString(options.filter);
     } else if (!options.filter) {
@@ -312,7 +293,6 @@ class Client extends EventEmitter {
     } else if (!isFilter(options.filter)) {
       throw new TypeError('options.filter (Filter) required');
     }
-    assert.func(callback, 'callback');
 
     if (options.attributes) {
       if (!Array.isArray(options.attributes)) {
@@ -341,19 +321,15 @@ class Client extends EventEmitter {
   }
 
   unbind(callback) {
-    if (!callback)
-      callback = () => { };
+    assert.optionalFunc(callback, 'callback');
 
-    if (typeof (callback) !== 'function')
-      throw new TypeError('callback must be a function');
-
+    callback = callback || (() => { });
     this.unbound = true;
 
     if (!this._socket)
       return callback();
 
-    const req = new UnbindRequest();
-    return this._send(req, 'unbind', null, callback);
+    return this._send(new UnbindRequest(), 'unbind', null, callback);
   }
 
   starttls(options, callback, _bypass) {

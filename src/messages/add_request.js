@@ -70,9 +70,7 @@ module.exports = class AddRequest extends LDAPMessage {
   }
 
   indexOf(attr) {
-    if (!attr || typeof (attr) !== 'string')
-      throw new TypeError('attr (string) required');
-
+    assert.string(attr, 'attr');
     return this.attributes.findIndex(i => i.type === attr);
   }
 
@@ -81,16 +79,12 @@ module.exports = class AddRequest extends LDAPMessage {
   }
 
   getAttribute(name) {
-    if (!name || typeof (name) !== 'string')
-      throw new TypeError('attribute name (string) required');
-
+    assert.string(name, 'attribute name');
     return this.attributes.find(i => i.type === name.toLowerCase()) || null;
   }
 
   addAttribute(attr) {
-    if (!(attr instanceof Attribute))
-      throw new TypeError('attribute (Attribute) required');
-
+    assert.ok(attr instanceof Attribute, 'attribute (Attribute) required');
     return this.attributes.push(attr);
   }
 

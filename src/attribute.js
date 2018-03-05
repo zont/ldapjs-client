@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert-plus');
 const asn1 = require('asn1');
 const Protocol = require('./protocol');
 
@@ -8,13 +8,8 @@ class Attribute {
   constructor(options) {
     options = options || {};
 
-    if (typeof options !== 'object') {
-      throw new TypeError('options must be an object');
-    }
-
-    if (options.type && typeof options.type !== 'string') {
-      throw new TypeError('options.type must be a string');
-    }
+    assert.object(options, 'options');
+    assert.optionalString(options.type, 'options.type');
 
     this.type = options.type || '';
     this._vals = [];
@@ -100,9 +95,7 @@ class Attribute {
   }
 
   static compare(a, b) {
-    if (!Attribute.isAttribute(a) || !Attribute.isAttribute(b)) {
-      throw new TypeError('can only compare Attributes');
-    }
+    assert.ok(Attribute.isAttribute(a) && Attribute.isAttribute(b), 'can only compare Attributes');
 
     if (a.type < b.type) return -1;
     if (a.type > b.type) return 1;

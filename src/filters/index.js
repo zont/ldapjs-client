@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert-plus');
 const { BerReader } = require('asn1');
 const parents = require('ldap-filter');
 const Protocol = require('../protocol');
@@ -123,9 +123,7 @@ const cloneFilter = input => {
 
 module.exports = {
   parse(ber) {
-    if (!ber || !(ber instanceof BerReader))
-      throw new TypeError('ber (BerReader) required');
-
+    assert.ok(ber instanceof BerReader, 'ber (BerReader) required');
     return _parse(ber);
   },
 

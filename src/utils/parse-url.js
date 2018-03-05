@@ -1,5 +1,6 @@
 const querystring = require('querystring');
 const url = require('url');
+const assert = require('assert-plus');
 
 const PROTOCOLS = ['ldap:', 'ldaps:'];
 const SCOPES = ['base', 'one', 'sub'];
@@ -7,8 +8,7 @@ const SCOPES = ['base', 'one', 'sub'];
 module.exports = str => {
   const u = url.parse(str);
 
-  if (!PROTOCOLS.includes(u.protocol))
-    throw new TypeError(`${str} is an invalid LDAP url: unsupported protocol (${u.protocol})`);
+  assert.ok(PROTOCOLS.includes(u.protocol), `Unsupported protocol: ${u.protocol}`);
 
   u.secure = u.protocol === 'ldaps:';
   u.hostname = u.hostname || 'localhost';
@@ -21,8 +21,7 @@ module.exports = str => {
       u.attributes = tmp[0].split(',').map(a => querystring.unescape(a.trim()));
     }
     if (tmp[1]) {
-      if (!SCOPES.includes(tmp[1]))
-        throw new TypeError(`${str} is an invalid LDAP url: unsupported scope (${tmp[1]})`);
+      assert.ok(SCOPES.includes(tmp[1]), `Unsupported scope: ${tmp[1]}`);
       u.scope = tmp[1];
     }
     if (tmp[2]) {

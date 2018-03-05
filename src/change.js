@@ -131,8 +131,7 @@ class Change {
   }
 
   static compare(a, b) {
-    if (!Change.isChange(a) || !Change.isChange(b))
-      throw new TypeError('can only compare Changes');
+    assert.ok(Change.isChange(a) && Change.isChange(b), 'can only compare Changes');
 
     if (a.operation < b.operation)
       return -1;

@@ -41,8 +41,7 @@ module.exports = class SearchReference extends LDAPMessage {
   }
 
   fromObject(obj) {
-    if (typeof (obj) !== 'object')
-      throw new TypeError('object required');
+    assert.object(obj);
 
     this.uris = obj.uris ? obj.uris.slice() : [];
 

@@ -97,8 +97,7 @@ class RDN {
 
 // Thank you OpenJDK!
 const parse = name => {
-  if (typeof (name) !== 'string')
-    throw new TypeError('name (string) required');
+  assert.string(name, 'name');
 
   let cur = 0;
   const len = name.length;

@@ -49,8 +49,7 @@ class Parser extends EventEmitter {
   }
 
   write(data) {
-    if (!data || !Buffer.isBuffer(data))
-      throw new TypeError('data (buffer) required');
+    assert.buffer(data, 'data');
 
     let nextMessage = null;
 

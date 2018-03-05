@@ -29,11 +29,5 @@ module.exports = {
     if (!(typeof input === 'undefined' || isDN(input) || typeof input === 'string')) {
       _assert(input, 'DN or string', name);
     }
-  },
-
-  stringDN(input, name) {
-    if (!(isDN(input) || typeof (input) === 'string')) {
-      _assert(input, 'DN or string', name);
-    }
   }
 };

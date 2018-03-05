@@ -1,6 +1,5 @@
 const querystring = require('querystring');
 const url = require('url');
-const filter = require('../filters');
 
 const PROTOCOLS = ['ldap:', 'ldaps:'];
 const SCOPES = ['base', 'one', 'sub'];
@@ -35,7 +34,7 @@ module.exports = str => {
 
     u.attributes = u.attributes || [];
     u.scope = u.scope || 'base';
-    u.filter = filter.parseString(u.filter || '(objectclass=*)');
+    u.filter = u.filter || '(objectclass=*)';
   }
 
   return u;

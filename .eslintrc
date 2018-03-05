@@ -14,7 +14,15 @@
       "error",
       "always"
     ],
-    "space-before-function-paren": 0,
-    "no-console": 0
+    "linebreak-style": [
+      "error",
+      "unix"
+    ],
+    "comma-dangle": [
+      "error",
+      "never"
+    ],
+    "space-before-function-paren": "off",
+    "no-console": "off"
   }
 }

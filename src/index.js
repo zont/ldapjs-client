@@ -282,7 +282,7 @@ class Client extends EventEmitter {
     const req = new BindRequest({
       name: name || '',
       authentication: 'Simple',
-      credentials: credentials || '',
+      credentials: credentials || ''
     });
 
     return this._send(req, [LDAP_SUCCESS], null, callback, _bypass);

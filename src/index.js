@@ -182,8 +182,10 @@ class Client {
   async _connect() {
     return new Promise((resolve, reject) => {
       const errorHandler = err => {
-        this._socket.destroy();
-        this._socket = null;
+        if (this._socket) {
+          this._socket.destroy();
+          this._socket = null;
+        }
         reject(err || new Error('client error during setup'));
       };
 

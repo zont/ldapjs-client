@@ -11,19 +11,6 @@ const { AddRequest, BindRequest, DeleteRequest, ModifyRequest, ModifyDNRequest, 
   UnbindRequest, LDAPResult, SearchEntry, SearchReference, Parser } = require('./messages');
 const parseUrl = require('./utils/parse-url');
 
-
-const ensureDN = (input, strict) => {
-  if (dn.DN.isDN(input)) {
-    return dn;
-  } else if (strict) {
-    return dn.parse(input);
-  } else if (typeof input === 'string') {
-    return input;
-  } else {
-    throw new Error('invalid DN');
-  }
-};
-
 const changeFromObject = change => {
   assert.ok(change.operation || change.type, 'change.operation required');
   assert.object(change.modification, 'change.modification');
@@ -43,7 +30,6 @@ const changeFromObject = change => {
   }
 };
 
-
 class Client {
   constructor(options) {
     assert.object(options, 'options');
@@ -52,7 +38,7 @@ class Client {
     const url = options.url ? parseUrl(options.url) : null;
     delete url.search;
 
-    Object.assign(this, { strictDN: true }, options, url);
+    Object.assign(this, options, url);
 
     let searchEntries = [];
     this._parser = new Parser();
@@ -81,45 +67,39 @@ class Client {
     });
   }
 
-  async add(name, attributes) {
-    assert.ok(name !== undefined, 'name');
+  async add(entry, attributes) {
+    assert.string(entry, 'entry');
     assert.object(attributes, 'attributes');
 
-    if (Array.isArray(attributes)) {
-      if (attributes.some(a => !Attribute.isAttribute(a))) {
-        throw new TypeError('entry must be an Array of Attributes');
+    attributes = Object.keys(attributes).map(k => {
+      const attr = new Attribute({ type: k });
+
+      if (Array.isArray(attributes[k])) {
+        attributes[k].forEach(v => attr.addValue(v.toString()));
+      } else {
+        attr.addValue(attributes[k].toString());
       }
-    } else {
-      attributes = Object.keys(attributes).map(k => {
-        const attr = new Attribute({ type: k });
 
-        if (Array.isArray(attributes[k])) {
-          attributes[k].forEach(v => attr.addValue(v.toString()));
-        } else {
-          attr.addValue(attributes[k].toString());
-        }
+      return attr;
+    });
 
-        return attr;
-      });
-    }
-
-    return this._send(new AddRequest({ entry: ensureDN(name, this.strictDN), attributes }));
+    return this._send(new AddRequest({ entry, attributes }));
   }
 
   async bind(name, credentials = '') {
-    assert.ok(typeof name === 'string' || name instanceof dn.DN, 'name (string) required');
+    assert.string(name, 'name');
     assert.optionalString(credentials, 'credentials');
 
     return this._send(new BindRequest({ authentication: 'Simple', name, credentials }));
   }
 
-  async del(name) {
-    assert.ok(name !== undefined, 'name');
-    return this._send(new DeleteRequest({ entry: ensureDN(name, this.strictDN) }));
+  async del(entry) {
+    assert.string(entry, 'entry');
+    return this._send(new DeleteRequest({ entry }));
   }
 
-  async modify(name, change) {
-    assert.ok(name !== undefined, 'name');
+  async modify(object, change) {
+    assert.string(object, 'object');
     assert.object(change, 'change');
 
     change = Array.isArray(change) ? change : [change];
@@ -133,15 +113,15 @@ class Client {
       }
     });
 
-    return this._send(new ModifyRequest({ object: ensureDN(name, this.strictDN), changes }));
+    return this._send(new ModifyRequest({ object, changes }));
   }
 
-  async modifyDN(name, newName) {
-    assert.ok(name !== undefined, 'name');
+  async modifyDN(entry, newName) {
+    assert.string(entry, 'entry');
     assert.string(newName, 'newName');
 
     const newDN = dn.parse(newName);
-    const req = new ModifyDNRequest({ entry: ensureDN(name), deleteOldRdn: true });
+    const req = new ModifyDNRequest({ entry, deleteOldRdn: true });
 
     if (newDN.length !== 1) {
       req.newRdn = dn.parse(newDN.rdns.shift().toString());
@@ -153,12 +133,8 @@ class Client {
     return this._send(req);
   }
 
-  async search(base, options) {
-    if (typeof options === 'string') {
-      options = { filter: options };
-    }
-
-    assert.ok(base, 'search base');
+  async search(baseObject, options) {
+    assert.string(baseObject, 'baseObject');
     assert.object(options, 'options');
 
     if (typeof (options.filter) === 'string') {
@@ -178,7 +154,7 @@ class Client {
     }
 
     return this._send(new SearchRequest({
-      baseObject: ensureDN(base, this.strictDN),
+      baseObject,
       scope: options.scope || 'base',
       filter: options.filter,
       derefAliases: options.derefAliases || NEVER_DEREF_ALIASES,
@@ -207,6 +183,7 @@ class Client {
     return new Promise((resolve, reject) => {
       const errorHandler = err => {
         this._socket.destroy();
+        this._socket = null;
         reject(err || new Error('client error during setup'));
       };
 

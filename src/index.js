@@ -11,7 +11,9 @@ const Attribute = require('./attribute');
 const Change = require('./change');
 const Protocol = require('./protocol');
 const dn = require('./dn');
-const { getError, AbandonedError, ConnectionError, TimeoutError, ProtocolError, LDAP_SUCCESS, LDAP_COMPARE_TRUE, LDAP_COMPARE_FALSE } = require('./errors');
+const RequestQueue = require('./request-queue');
+const MessageTracker = require('./message-tracker');
+const { getError, ConnectionError, TimeoutError, ProtocolError, LDAP_SUCCESS, LDAP_COMPARE_TRUE, LDAP_COMPARE_FALSE } = require('./errors');
 const { parseString, isFilter, PresenceFilter } = require('./filters');
 const {
   AbandonRequest,
@@ -35,14 +37,12 @@ const parseUrl = require('./utils/parse-url');
 ///--- Globals
 
 const CMP_EXPECT = [LDAP_COMPARE_TRUE, LDAP_COMPARE_FALSE];
-const MAX_MSGID = Math.pow(2, 31) - 1;
-
 let CLIENT_ID = 0;
 
 ///--- Internal Helpers
 
 const nextClientId = () => {
-  if (++CLIENT_ID === MAX_MSGID)
+  if (++CLIENT_ID === MessageTracker.MAX_MSGID)
     return 1;
 
   return CLIENT_ID;
@@ -60,132 +60,6 @@ const ensureDN = (input, strict) => {
   }
 };
 
-class RequestQueue {
-  constructor(opts) {
-    if (!opts || typeof (opts) !== 'object') {
-      opts = {};
-    }
-    this.size = (opts.size > 0) ? opts.size : Infinity;
-    this.timeout = (opts.timeout > 0) ? opts.timeout : 0;
-    this._queue = [];
-    this._timer = null;
-    this._frozen = false;
-  }
-
-  enqueue(msg, expect, emitter, cb) {
-    if (this._queue.length >= this.size || this._frozen) {
-      return false;
-    }
-    this._queue.push([msg, expect, emitter, cb]);
-    if (this.timeout > 0) {
-      if (this._timer !== null) {
-        this._timer = setTimeout(() => {
-          this.freeze();
-          this.purge();
-        }, this.timeout);
-      }
-    }
-    return true;
-  }
-
-  flush(cb) {
-    if (this._timer) {
-      clearTimeout(this._timer);
-      this._timer = null;
-    }
-    const items = this._queue;
-    this._queue = [];
-    items.forEach(req => cb(...req));
-  }
-
-  purge() {
-    this.flush((msg, expect, emitter, cb) => cb(new TimeoutError('request queue timeout')));
-  }
-
-  freeze() {
-    this._frozen = true;
-  }
-
-  thaw() {
-    this._frozen = false;
-  }
-}
-
-class MessageTracker {
-  constructor(opts) {
-    Object.assign(this, opts);
-
-    this._msgid = 0;
-    this._messages = {};
-    this._abandoned = {};
-
-    this.__defineGetter__('pending', () => Object.keys(this._messages));
-  }
-
-  track(message, callback) {
-    message.messageID = this._nextID();
-    this._messages[message.messageID] = callback;
-    return message.messageID;
-  }
-
-  fetch(msgid) {
-    let msg = this._messages[msgid];
-    if (msg) {
-      this._purgeAbandoned(msgid);
-      return msg;
-    }
-    msg = this._abandoned[msgid];
-    if (msg) {
-      return msg.cb;
-    }
-    return null;
-  }
-
-  remove(msgid) {
-    if (this._messages[msgid]) {
-      delete this._messages[msgid];
-    } else if (this._abandoned[msgid]) {
-      delete this._abandoned[msgid];
-    }
-  }
-
-  abandonMsg(msgid) {
-    if (this._messages[msgid]) {
-      this._abandoned[msgid] = {
-        age: this._msgid,
-        cb: this._messages[msgid]
-      };
-      delete this._messages[msgid];
-    }
-  }
-
-  _purgeAbandoned(msgid) {
-    const geWindow = (ref, comp) => {
-      let max = ref + (MAX_MSGID / 2);
-      const min = ref;
-      if (max >= MAX_MSGID) {
-        max = max - MAX_MSGID - 1;
-        return ((comp <= max) || (comp >= min));
-      } else {
-        return ((comp <= max) && (comp >= min));
-      }
-    };
-
-    Object.keys(this._abandoned).forEach(id => {
-      if (geWindow(this._abandoned[id].age, msgid)) {
-        this._abandoned[id].cb(new AbandonedError('client request abandoned'));
-        delete this._abandoned[id];
-      }
-    });
-  }
-
-  _nextID() {
-    if (++this._msgid >= MAX_MSGID)
-      this._msgid = 1;
-
-    return this._msgid;
-  }
-}
 
 class Client extends EventEmitter {
   constructor(options) {

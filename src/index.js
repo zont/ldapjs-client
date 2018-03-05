@@ -706,8 +706,7 @@ class Client extends EventEmitter {
         .removeAllListeners('end')
         .removeAllListeners('timeout');
 
-      ((socket.socket) ? socket.socket : socket).once('close',
-        self._onClose.bind(self));
+      ((socket.socket) ? socket.socket : socket).once('close', self._onClose.bind(self));
       socket.on('end', function onEnd() {
         self.emit('end');
         socket.end();

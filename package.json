@@ -19,7 +19,7 @@
   "main": "src/index.js",
   "scripts": {
     "lint": "eslint --fix src/**/* __tests__/**/*",
-    "test": "jest"
+    "test": "jest --forceExit"
   },
   "dependencies": {
     "asn1": "0.2.3",

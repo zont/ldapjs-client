@@ -10,7 +10,7 @@ It supports the LDAP client interface.
 
 ## Installation
 
-    npm install ldapjs
+    npm install ldapjs-client
 
 Usage
 -----

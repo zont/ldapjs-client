@@ -5,8 +5,12 @@
 [travis_image_url]: https://api.travis-ci.org/zont/ldapjs-client.svg
 [travis_page_url]: https://travis-ci.org/zont/ldapjs-client
 
+> node >= 8.0
 
-It supports the LDAP client interface.
+No jdapjs (https://www.npmjs.com/package/ldapjs) as dependency.
+
+**Why**: because jdapjs is not maintained for more than two years.
+
 
 ## Installation
 

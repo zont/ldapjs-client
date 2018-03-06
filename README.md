@@ -48,7 +48,7 @@ try {
 ```js
 try {
   await client.bind('username', 'password');
-} catch () {
+} catch (e) {
   console.log('Bind failed');
 }
 ```

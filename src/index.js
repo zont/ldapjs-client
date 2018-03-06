@@ -43,26 +43,22 @@ class Client {
     this._queue = new Map();
     this._id = 0;
 
-    let searchEntries = [];
     this._parser = new Parser();
     this._parser.on('error', e => console.error(e));
     this._parser.on('message', msg => {
       if (msg instanceof SearchEntry || msg instanceof SearchReference) {
-        searchEntries.push(msg.object);
+        const entry = this._queue.get(msg.id);
+        entry.result = entry.result || [];
+        entry.result.push(msg.object);
       } else {
-        const { resolve, reject } = this._queue.get(msg.id);
+        const { resolve, reject, result } = this._queue.get(msg.id);
 
         if (msg instanceof LDAPResult) {
           if (msg.status !== LDAP_SUCCESS) {
             reject(getError(msg));
           }
 
-          if (searchEntries.length > 0) {
-            resolve(searchEntries.slice());
-            searchEntries.length = 0;
-          } else {
-            resolve(msg.object);
-          }
+          resolve(result || msg.object);
         } else if (msg instanceof Error) {
           reject(msg);
         } else {

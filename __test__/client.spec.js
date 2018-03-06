@@ -3,10 +3,6 @@ const Client = require('../src');
 describe('Client', () => {
   it('defined', () => {
     expect(Client).toBeDefined();
-  });
-
-  it('create', async () => {
-    expect.assertions(12);
 
     const client = new Client({ url: 'ldap://www.zflexldap.com' });
 
@@ -19,16 +15,14 @@ describe('Client', () => {
     expect(client.modifyDN).toBeDefined();
     expect(client.search).toBeDefined();
     expect(client.unbind).toBeDefined();
+  });
+
+  it('destroy', async () => {
+    expect.assertions(1);
+
+    const client = new Client({ url: 'ldap://www.zflexldap.com' });
 
     try {
-      await client.bind('cn=ro_admin,ou=sysadmins,dc=zflexsoftware,dc=com', 'zflexpass');
-
-      expect(true).toBeTruthy();
-
-      const response = await client.search('ou=guests,dc=zflexsoftware,dc=com', { scope: 'sub' });
-
-      expect(response.length).toBeGreaterThan(0);
-
       await client.destroy();
 
       expect(true).toBeTruthy();
@@ -37,36 +31,20 @@ describe('Client', () => {
     }
   });
 
-  it('create fail', async () => {
-    expect.assertions(2);
+  it('bind', async () => {
+    expect.assertions(1);
 
-    const client = new Client({ url: 'ldap://127.0.0.1' });
-
-    expect(client).toBeDefined();
+    const client = new Client({ url: 'ldap://www.zflexldap.com' });
 
     try {
       await client.bind('cn=ro_admin,ou=sysadmins,dc=zflexsoftware,dc=com', 'zflexpass');
 
-      expect(false).toBeTruthy();
-    } catch (e) {
       expect(true).toBeTruthy();
-    }
-  });
-
-  it('SSl fail', async () => {
-    expect.assertions(2);
-
-    const client = new Client({ url: 'ldaps://www.zflexldap.com' });
-
-    expect(client).toBeDefined();
-
-    try {
-      await client.bind('cn=ro_admin,ou=sysadmins,dc=zflexsoftware,dc=com', 'zflexpass');
-
-      expect(false).toBeTruthy();
     } catch (e) {
-      expect(true).toBeTruthy();
+      expect(e).toBe(null);
     }
+
+    await client.destroy();
   });
 
   it('parallel bind', async () => {
@@ -80,5 +58,70 @@ describe('Client', () => {
     await Promise.all([p1, p2]);
 
     expect(true).toBeTruthy();
+  });
+
+  it('bind fail', async () => {
+    expect.assertions(1);
+
+    const client = new Client({ url: 'ldap://www.zflexldap.com' });
+
+    try {
+      await client.bind('cn=undefined_111_admin,ou=sysadmins,dc=zflexsoftware,dc=com', 'no_pass_222');
+
+      expect(false).toBeTruthy();
+    } catch (e) {
+      expect(true).toBeTruthy();
+    }
+
+    await client.destroy();
+  });
+
+  it('connect fail', async () => {
+    expect.assertions(1);
+
+    const client = new Client({ url: 'ldap://127.0.0.1' });
+
+    try {
+      await client.bind('cn=ro_admin,ou=sysadmins,dc=zflexsoftware,dc=com', 'zflexpass');
+
+      expect(false).toBeTruthy();
+    } catch (e) {
+      expect(true).toBeTruthy();
+    }
+
+    await client.destroy();
+  });
+
+  it('SSl fail', async () => {
+    expect.assertions(1);
+
+    const client = new Client({ url: 'ldaps://www.zflexldap.com' });
+
+    try {
+      await client.bind('cn=ro_admin,ou=sysadmins,dc=zflexsoftware,dc=com', 'zflexpass');
+
+      expect(false).toBeTruthy();
+    } catch (e) {
+      expect(true).toBeTruthy();
+    }
+
+    await client.destroy();
+  });
+
+  it('search', async () => {
+    expect.assertions(1);
+
+    const client = new Client({ url: 'ldap://www.zflexldap.com' });
+
+    try {
+      await client.bind('cn=ro_admin,ou=sysadmins,dc=zflexsoftware,dc=com', 'zflexpass');
+      const response = await client.search('ou=guests,dc=zflexsoftware,dc=com', { scope: 'sub' });
+
+      expect(response.length).toBeGreaterThan(0);
+    } catch (e) {
+      expect(e).toBe(null);
+    }
+
+    await client.destroy();
   });
 });

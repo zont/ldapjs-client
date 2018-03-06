@@ -40,29 +40,36 @@ class Client {
 
     Object.assign(this, options, url);
 
+    this._queue = new Map();
+    this._id = 0;
+
     let searchEntries = [];
     this._parser = new Parser();
-    this._parser.on('error', e => this._reject(e));
+    this._parser.on('error', e => console.error(e));
     this._parser.on('message', msg => {
       if (msg instanceof SearchEntry || msg instanceof SearchReference) {
         searchEntries.push(msg.object);
       } else {
+        const { resolve, reject } = this._queue.get(msg.id);
+
         if (msg instanceof LDAPResult) {
           if (msg.status !== LDAP_SUCCESS) {
-            this._reject(getError(msg));
+            reject(getError(msg));
           }
 
           if (searchEntries.length > 0) {
-            this._resolve(searchEntries.slice());
+            resolve(searchEntries.slice());
             searchEntries.length = 0;
           } else {
-            this._resolve(msg);
+            resolve(msg.object);
           }
         } else if (msg instanceof Error) {
-          this._reject(msg);
+          reject(msg);
         } else {
-          this._reject(new ProtocolError(msg.type));
+          reject(new ProtocolError(msg.type));
         }
+
+        this._queue.delete(msg.id);
       }
     });
   }
@@ -179,6 +186,11 @@ class Client {
     }
   }
 
+  get _nextId() {
+    this._id = Math.max(1, (this._id + 1) % 2147483647);
+    return this._id;
+  }
+
   async _connect() {
     return new Promise((resolve, reject) => {
       const errorHandler = err => {
@@ -210,17 +222,21 @@ class Client {
       await this._connect();
     }
 
+    message.messageID = this._nextId;
+
     return new Promise((resolve, reject) => {
       try {
-        this._resolve = resolve;
-        this._reject = reject;
-
+        this._queue.set(message.id, { resolve, reject });
         this._socket.write(message.toBer());
 
         if (this.timeout) {
-          setTimeout(() => reject(new TimeoutError('request timeout (client interrupt)')), this.timeout);
+          setTimeout(() => {
+            this._queue.delete(message.id);
+            reject(new TimeoutError('request timeout (client interrupt)'));
+          }, this.timeout);
         }
       } catch (e) {
+        this._queue.delete(message.id);
         reject(e);
       }
     });

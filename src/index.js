@@ -6,7 +6,7 @@ const Change = require('./change');
 const { NEVER_DEREF_ALIASES } = require('./protocol');
 const dn = require('./dn');
 const { getError, TimeoutError, ProtocolError, LDAP_SUCCESS } = require('./errors');
-const { parseString, isFilter, PresenceFilter } = require('./filters');
+const { parseString } = require('./filters');
 const { AddRequest, BindRequest, DeleteRequest, ModifyRequest, ModifyDNRequest, SearchRequest,
   UnbindRequest, LDAPResult, SearchEntry, SearchReference, Parser } = require('./messages');
 const parseUrl = require('./utils/parse-url');
@@ -144,13 +144,11 @@ class Client {
     assert.string(baseObject, 'baseObject');
     assert.object(options, 'options');
 
-    if (typeof (options.filter) === 'string') {
-      options.filter = parseString(options.filter);
-    } else if (!options.filter) {
-      options.filter = new PresenceFilter({ attribute: 'objectclass' });
-    } else if (!isFilter(options.filter)) {
-      throw new TypeError('options.filter (Filter) required');
-    }
+    options.filter = options.filter || '(objectclass=*)';
+
+    assert.string(options.filter, 'options.filter');
+
+    options.filter = parseString(options.filter);
 
     if (options.attributes) {
       if (typeof (options.attributes) === 'string') {
@@ -183,6 +181,17 @@ class Client {
       this._socket.removeAllListeners('close');
       this._socket.destroy();
       this._socket = null;
+    }
+
+    if (this._parser) {
+      this._parser.removeAllListeners('error');
+      this._parser.removeAllListeners('message');
+      this._parser = null;
+    }
+
+    if (this._queue) {
+      this._queue.clear();
+      this._queue = null;
     }
   }
 

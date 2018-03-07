@@ -14,7 +14,7 @@ module.exports = class SearchEntry extends LDAPMessage {
     super(options);
 
     this.objectName = options.objectName || null;
-    this.setAttributes(options.attributes || []);
+    this._setAttributes(options.attributes || []);
   }
 
   get type() {
@@ -39,42 +39,7 @@ module.exports = class SearchEntry extends LDAPMessage {
     return obj;
   }
 
-  get raw() {
-    const obj = {
-      dn: this.dn.toString()
-    };
-
-    this.attributes.forEach(a => {
-      if (a.buffers && a.buffers.length) {
-        obj[a.type] = a.buffers.length > 1 ? a.buffers.slice() : a.buffers[0];
-      } else {
-        obj[a.type] = [];
-      }
-    });
-    return obj;
-  }
-
-  addAttribute(attr) {
-    assert.object(attr, 'attr');
-    this.attributes.push(attr);
-  }
-
-  toObject() {
-    return this.object;
-  }
-
-  fromObject(obj) {
-    assert.object(obj);
-
-    obj = obj.attributes || obj;
-    this.attributes = Object.keys(obj).map(type => new Attribute({ type, vals: obj[type] }));
-
-    return true;
-  }
-
-  setAttributes(obj) {
-    assert.object(obj);
-
+  _setAttributes(obj) {
     if (Array.isArray(obj)) {
       if (obj.some(a => !Attribute.isAttribute(a))) {
         throw new TypeError('entry must be an Array of Attributes');

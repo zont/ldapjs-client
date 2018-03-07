@@ -36,18 +36,6 @@ module.exports = class SearchReference extends LDAPMessage {
     this.uris = val.slice();
   }
 
-  toObject() {
-    return this.object;
-  }
-
-  fromObject(obj) {
-    assert.object(obj);
-
-    this.uris = obj.uris ? obj.uris.slice() : [];
-
-    return true;
-  }
-
   _parse(ber, length) {
     assert.ok(ber);
 

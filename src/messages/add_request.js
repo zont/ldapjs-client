@@ -58,45 +58,4 @@ module.exports = class AddRequest extends LDAPMessage {
 
     return ber;
   }
-
-  indexOf(attr) {
-    assert.string(attr, 'attr');
-    return this.attributes.findIndex(i => i.type === attr);
-  }
-
-  attributeNames() {
-    return this.attributes.map(i => i.type.toLowerCase());
-  }
-
-  getAttribute(name) {
-    assert.string(name, 'attribute name');
-    return this.attributes.find(i => i.type === name.toLowerCase()) || null;
-  }
-
-  addAttribute(attr) {
-    assert.ok(attr instanceof Attribute, 'attribute (Attribute) required');
-    return this.attributes.push(attr);
-  }
-
-  toObject() {
-    const obj = {
-      dn: this.entry ? this.entry.toString() : '',
-      attributes: {}
-    };
-
-    if (!this.attributes || !this.attributes.length)
-      return obj;
-
-    this.attributes.forEach(a => {
-      if (!obj.attributes[a.type])
-        obj.attributes[a.type] = [];
-
-      a.vals.forEach(v => {
-        if (obj.attributes[a.type].indexOf(v) === -1)
-          obj.attributes[a.type].push(v);
-      });
-    });
-
-    return obj;
-  }
 };

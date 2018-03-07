@@ -101,6 +101,25 @@ class Change {
     return change instanceof Change || (typeof change.toBer === 'function' && change.modification !== undefined && change.operation !== undefined);
   }
 
+  static fromObject(change) {
+    assert.ok(change.operation || change.type, 'change.operation required');
+    assert.object(change.modification, 'change.modification');
+
+    if (Object.keys(change.modification).length == 2 && typeof change.modification.type === 'string' && Array.isArray(change.modification.vals)) {
+      return [new Change({
+        operation: change.operation || change.type,
+        modification: change.modification
+      })];
+    } else {
+      return Object.keys(change.modification).map(k => new Change({
+        operation: change.operation || change.type,
+        modification: {
+          [k]: change.modification[k]
+        }
+      }));
+    }
+  }
+
   parse(ber) {
     assert.ok(ber);
 

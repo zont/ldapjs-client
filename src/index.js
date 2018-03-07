@@ -11,25 +11,6 @@ const { AddRequest, BindRequest, DeleteRequest, ModifyRequest, ModifyDNRequest, 
   UnbindRequest, UnbindResponse, LDAPResult, SearchEntry, SearchReference, Parser } = require('./messages');
 const parseUrl = require('./utils/parse-url');
 
-const changeFromObject = change => {
-  assert.ok(change.operation || change.type, 'change.operation required');
-  assert.object(change.modification, 'change.modification');
-
-  if (Object.keys(change.modification).length == 2 && typeof change.modification.type === 'string' && Array.isArray(change.modification.vals)) {
-    return [new Change({
-      operation: change.operation || change.type,
-      modification: change.modification
-    })];
-  } else {
-    return Object.keys(change.modification).map(k => new Change({
-      operation: change.operation || change.type,
-      modification: {
-        [k]: change.modification[k]
-      }
-    }));
-  }
-};
-
 class Client {
   constructor(options) {
     assert.object(options, 'options');
@@ -108,13 +89,7 @@ class Client {
     change = Array.isArray(change) ? change : [change];
 
     const changes = [];
-    change.forEach(c => {
-      if (Change.isChange(c)) {
-        changes.push(c);
-      } else {
-        changes.push(...changeFromObject(c));
-      }
-    });
+    change.forEach(c => changes.push(...Change.FromObject(c)));
 
     return this._send(new ModifyRequest({ object, changes }));
   }

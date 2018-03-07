@@ -2,11 +2,11 @@ const assert = require('assert-plus');
 const { Ber } = require('asn1');
 const LDAPMessage = require('./message');
 const { parse, parseString, PresenceFilter } = require('../filters');
-const { LDAP_REQ_SEARCH, SCOPE_BASE_OBJECT, SCOPE_ONE_LEVEL, SCOPE_SUBTREE } = require('../protocol');
+const { LDAP_REQ_SEARCH, NEVER_DEREF_ALIASES, SCOPE_BASE_OBJECT, SCOPE_ONE_LEVEL, SCOPE_SUBTREE } = require('../protocol');
 
 module.exports = class SearchRequest extends LDAPMessage {
   constructor(options) {
-    super(Object.assign(options, { protocolOp: LDAP_REQ_SEARCH, filter: parseString(options.filter) }));
+    super(Object.assign(options, { derefAliases: NEVER_DEREF_ALIASES, protocolOp: LDAP_REQ_SEARCH, filter: parseString(options.filter) }));
   }
 
   get type() {

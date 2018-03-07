@@ -111,9 +111,9 @@ Attribute | Type | Description
 scope | String | One of base, one, or sub. Defaults to base
 filter | String | A string version of an LDAP filter. Defaults to (objectclass=*)
 attributes | Array of String | attributes to select and return. Defaults to the empty set, which means all attributes
-attrsOnly | Boolean | on whether you want the server to only return the names of the attributes, and not their values. Borderline useless. Defaults to false
 sizeLimit | Number | the maximum number of entries to return. Defaults to 0 (unlimited)
 timeLimit | Number | the maximum amount of time the server should take in responding, in seconds. Defaults to 10. Lots of servers will ignore this
+typesOnly | Boolean | on whether you want the server to only return the names of the attributes, and not their values. Borderline useless. Defaults to false
 
 ### unbind
 ```js

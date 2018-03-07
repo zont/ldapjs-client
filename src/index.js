@@ -3,8 +3,7 @@ const tls = require('tls');
 const assert = require('assert-plus');
 const Attribute = require('./attribute');
 const Change = require('./change');
-const { NEVER_DEREF_ALIASES } = require('./protocol');
-const dn = require('./dn');
+const { parse } = require('./dn');
 const { getError, TimeoutError, ProtocolError, LDAP_SUCCESS } = require('./errors');
 const { AddRequest, BindRequest, DeleteRequest, ModifyRequest, ModifyDNRequest, SearchRequest,
   UnbindRequest, UnbindResponse, LDAPResult, SearchEntry, SearchReference, Parser } = require('./messages');
@@ -71,10 +70,8 @@ class Client {
     assert.string(object, 'object');
     assert.object(change, 'change');
 
-    change = Array.isArray(change) ? change : [change];
-
     const changes = [];
-    change.forEach(c => changes.push(...Change.fromObject(c)));
+    (Array.isArray(change) ? change : [change]).forEach(c => changes.push(...Change.fromObject(c)));
 
     return this._send(new ModifyRequest({ object, changes }));
   }
@@ -83,30 +80,28 @@ class Client {
     assert.string(entry, 'entry');
     assert.string(newName, 'newName');
 
-    const newDN = dn.parse(newName);
-    const req = new ModifyDNRequest({ entry });
+    const newRdn = parse(newName);
 
-    if (newDN.rdns.length !== 1) {
-      req.newRdn = dn.parse(newDN.rdns.shift().toString());
-      req.newSuperior = newDN;
+    if (newRdn.rdns.length !== 1) {
+      return this._send(new ModifyDNRequest({ entry, newRdn: parse(newRdn.rdns.shift().toString()), newSuperior: newRdn }));
     } else {
-      req.newRdn = newDN;
+      return this._send(new ModifyDNRequest({ entry, newRdn }));
     }
-
-    return this._send(req);
   }
 
   async search(baseObject, options) {
     assert.string(baseObject, 'baseObject');
     assert.object(options, 'options');
+    assert.optionalString(options.scope, 'options.scope');
     assert.optionalString(options.filter, 'options.filter');
+    assert.optionalNumber(options.sizeLimit, 'options.sizeLimit');
+    assert.optionalNumber(options.timeLimit, 'options.timeLimit');
     assert.optionalArrayOfString(options.attributes, 'options.attributes');
 
     return this._send(new SearchRequest({
       baseObject,
       scope: options.scope || 'base',
       filter: options.filter || '(objectclass=*)',
-      derefAliases: options.derefAliases || NEVER_DEREF_ALIASES,
       sizeLimit: options.sizeLimit || 0,
       timeLimit: options.timeLimit || 10,
       typesOnly: options.typesOnly || false,

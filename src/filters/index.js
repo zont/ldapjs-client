@@ -1,6 +1,6 @@
 const assert = require('assert-plus');
 const { BerReader } = require('asn1');
-const parents = require('ldap-filter');
+const ldapFilter = require('ldap-filter');
 const Protocol = require('../protocol');
 const AndFilter = require('./and_filter');
 const ApproximateFilter = require('./approx_filter');
@@ -21,7 +21,7 @@ const parseSet = (f, ber) => {
 };
 
 const _parse = ber => {
-  assert.ok(ber);
+  assert.ok(ber instanceof BerReader, 'ber (BerReader) required');
 
   let f;
 
@@ -115,14 +115,7 @@ const cloneFilter = input => {
 };
 
 module.exports = {
-  parse(ber) {
-    assert.ok(ber instanceof BerReader, 'ber (BerReader) required');
-    return _parse(ber);
-  },
-
-  parseString(str) {
-    return cloneFilter(parents.parse(str));
-  },
-
+  parse: ber => _parse(ber),
+  parseString: str => cloneFilter(ldapFilter.parse(str)),
   PresenceFilter
 };

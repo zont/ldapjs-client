@@ -16,9 +16,7 @@ class PresenceFilter extends parents.PresenceFilter {
   _toBer(ber) {
     assert.ok(ber);
 
-    for (let i = 0; i < this.attribute.length; ++i) {
-      ber.writeByte(this.attribute.charCodeAt(i));
-    }
+    new Buffer(this.attribute).forEach(i => ber.writeByte(i));
 
     return ber;
   }

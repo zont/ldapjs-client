@@ -78,8 +78,7 @@ class Attribute {
       this._vals.forEach(b => {
         ber.writeByte(asn1.Ber.OctetString);
         ber.writeLength(b.length);
-        for (let i = 0; i < b.length; ++i)
-          ber.writeByte(b[i]);
+        b.forEach(i => ber.writeByte(i));
       });
     } else {
       ber.writeStringArray([]);

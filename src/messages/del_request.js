@@ -35,9 +35,7 @@ module.exports = class DeleteRequest extends LDAPMessage {
   _toBer(ber) {
     assert.ok(ber);
 
-    const buf = new Buffer(this.entry.toString());
-    for (let i = 0; i < buf.length; ++i)
-      ber.writeByte(buf[i]);
+    new Buffer(this.entry.toString()).forEach(i => ber.writeByte(i));
 
     return ber;
   }

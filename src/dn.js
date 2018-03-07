@@ -31,7 +31,7 @@ const escapeValue = (val, forceQuote) => {
     out += val[cur++];
   }
   if (quoted)
-    out = '"' + out + '"';
+    out = `"${  out  }"`;
   return out;
 };
 
@@ -272,7 +272,7 @@ class DN {
       } else if (options.skipSpace === true || str.length === 0) {
         str += rdnString;
       } else {
-        str += ' ' + rdnString;
+        str += ` ${  rdnString}`;
       }
     });
     return str;

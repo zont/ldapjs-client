@@ -23,7 +23,7 @@ class SubstringFilter extends parents.SubstringFilter {
           this.final = this.attribute === 'objectclass' ? ber.readString(tag).toLowerCase() : ber.readString(tag);
           break;
         default:
-          throw new Error('Invalid substrings filter type: 0x' + tag.toString(16));
+          throw new Error(`Invalid substrings filter type: 0x${tag.toString(16)}`);
       }
     }
 

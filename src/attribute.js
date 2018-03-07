@@ -47,7 +47,7 @@ class Attribute {
     if (Buffer.isBuffer(val)) {
       this._vals.push(val);
     } else {
-      this._vals.push(new Buffer(val + '', _bufferEncoding(this.type)));
+      this._vals.push(new Buffer(String(val), _bufferEncoding(this.type)));
     }
   }
 

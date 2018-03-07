@@ -21,7 +21,7 @@ class ExtensibleFilter extends parents.ExtensibleFilter {
           this.dnAttributes = ber.readBoolean(tag);
           break;
         default:
-          throw new Error('Invalid ext_match filter type: 0x' + tag.toString(16));
+          throw new Error(`Invalid ext_match filter type: 0x${tag.toString(16)}`);
       }
     }
 

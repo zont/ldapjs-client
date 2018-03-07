@@ -33,7 +33,7 @@ module.exports = class SearchRequest extends LDAPMessage {
       case SCOPE_ONE_LEVEL: return 'one';
       case SCOPE_SUBTREE: return 'sub';
       default:
-        throw new Error(this._scope + ' is an invalid search scope');
+        throw new Error(`${this._scope} is an invalid search scope`);
     }
   }
 
@@ -50,7 +50,7 @@ module.exports = class SearchRequest extends LDAPMessage {
           this._scope = SCOPE_SUBTREE;
           break;
         default:
-          throw new Error(val + ' is an invalid search scope');
+          throw new Error(`${val} is an invalid search scope`);
       }
     } else {
       this._scope = val;

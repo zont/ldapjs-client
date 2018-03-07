@@ -79,7 +79,7 @@ const _parse = ber => {
       break;
 
     default:
-      throw new Error('Invalid search filter type: 0x' + type.toString(16));
+      throw new Error(`Invalid search filter type: 0x${type.toString(16)}`);
   }
 
 
@@ -110,7 +110,7 @@ const cloneFilter = input => {
     case 'ext':
       return new ExtensibleFilter(input);
     default:
-      throw new Error('invalid filter type:' + input.type);
+      throw new Error(`invalid filter type: ${input.type}`);
   }
 };
 

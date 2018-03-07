@@ -22,6 +22,7 @@
       "error",
       "never"
     ],
+    "prefer-template": "error",
     "space-before-function-paren": "off",
     "no-console": "off"
   }

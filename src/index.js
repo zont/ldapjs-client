@@ -4,7 +4,7 @@ const assert = require('assert-plus');
 const Attribute = require('./attribute');
 const Change = require('./change');
 const { parse } = require('./dn');
-const { getError, TimeoutError, ProtocolError, LDAP_SUCCESS } = require('./errors');
+const { getError, ConnectionError, TimeoutError, ProtocolError, LDAP_SUCCESS } = require('./errors');
 const { AddRequest, BindRequest, DeleteRequest, ModifyRequest, ModifyDNRequest, SearchRequest,
   UnbindRequest, UnbindResponse, LDAPResult, SearchEntry, SearchReference, Parser } = require('./messages');
 const parseUrl = require('./utils/parse-url');
@@ -108,7 +108,6 @@ class Client {
   async destroy() {
     if (this._socket) {
       this._socket.removeAllListeners('error');
-      this._socket.removeAllListeners('end');
       this._socket.removeAllListeners('close');
       this._socket.destroy();
       this._socket = null;
@@ -128,12 +127,19 @@ class Client {
 
   async _connect() {
     return new Promise((resolve, reject) => {
-      const errorHandler = err => {
+      const destroy = () => {
         if (this._socket) {
           this._socket.destroy();
           this._socket = null;
         }
-        reject(err || new Error('client error during setup'));
+
+        if (this._queue) {
+          for (const { reject } of this._queue.values()) {
+            reject(new ConnectionError('Connection closed'));
+          }
+
+          this._queue.clear();
+        }
       };
 
       if (this.secure) {
@@ -144,10 +150,11 @@ class Client {
         this._socket.once('connect', resolve);
       }
 
-      this._socket.on('close', errorHandler);
-      this._socket.on('end', errorHandler);
-      this._socket.on('error', errorHandler);
-      this._socket.on('timeout', errorHandler);
+      this._socket.on('close', destroy);
+      this._socket.on('error', e => {
+        destroy();
+        reject(e || new Error('client error during setup'));
+      });
       this._socket.on('data', data => this._parser.write(data));
     });
   }
@@ -162,10 +169,13 @@ class Client {
         this._queue.set(message.id, { resolve, reject, type: message.type, result: [] });
         this._socket.write(message.toBer());
 
+
         if (message.type === 'UnbindRequest') {
-          this._queue.delete(message.id);
-          resolve(new UnbindResponse());
-        } else if (this.timeout) {
+          this._socket.removeAllListeners('close');
+          this._socket.on('close', () => resolve(new UnbindResponse()));
+        }
+
+        if (this.timeout) {
           setTimeout(() => {
             this._queue.delete(message.id);
             reject(new TimeoutError('request timeout (client interrupt)'));

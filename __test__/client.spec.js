@@ -131,7 +131,7 @@ describe('Client', () => {
   });
 
   it('unbind', async () => {
-    expect.assertions(2);
+    expect.assertions(4);
 
     const client = new Client({ url: 'ldap://www.zflexldap.com' });
 
@@ -139,6 +139,20 @@ describe('Client', () => {
 
     expect(true).toBeTruthy();
 
+    await client.unbind();
+
+    expect(true).toBeTruthy();
+
+    try {
+      await client.search('ou=guests,dc=zflexsoftware,dc=com', { scope: 'sub' });
+
+      expect(false).toBeTruthy();
+    } catch (e) {
+      expect(true).toBeTruthy();
+    }
+
+    await client.bind('cn=ro_admin,ou=sysadmins,dc=zflexsoftware,dc=com', 'zflexpass');
+    await client.search('ou=guests,dc=zflexsoftware,dc=com', { scope: 'sub' });
     await client.unbind();
 
     expect(true).toBeTruthy();

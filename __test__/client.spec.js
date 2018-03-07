@@ -124,4 +124,24 @@ describe('Client', () => {
 
     await client.destroy();
   });
+
+  it('unbind', async () => {
+    expect.assertions(2);
+
+    const client = new Client({ url: 'ldap://www.zflexldap.com' });
+
+    try {
+      await client.bind('cn=ro_admin,ou=sysadmins,dc=zflexsoftware,dc=com', 'zflexpass');
+
+      expect(true).toBeTruthy();
+
+      await client.unbind();
+
+      expect(true).toBeTruthy();
+    } catch (e) {
+      expect(e).toBe(null);
+    }
+
+    await client.destroy();
+  });
 });

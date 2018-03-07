@@ -8,7 +8,7 @@ const dn = require('./dn');
 const { getError, TimeoutError, ProtocolError, LDAP_SUCCESS } = require('./errors');
 const { parseString } = require('./filters');
 const { AddRequest, BindRequest, DeleteRequest, ModifyRequest, ModifyDNRequest, SearchRequest,
-  UnbindRequest, LDAPResult, SearchEntry, SearchReference, Parser } = require('./messages');
+  UnbindRequest, UnbindResponse, LDAPResult, SearchEntry, SearchReference, Parser } = require('./messages');
 const parseUrl = require('./utils/parse-url');
 
 const changeFromObject = change => {
@@ -234,7 +234,9 @@ class Client {
         this._queue.set(message.id, { resolve, reject });
         this._socket.write(message.toBer());
 
-        if (this.timeout) {
+        if (message.type === 'UnbindRequest') {
+          resolve(new UnbindResponse({ messageID: message.id }));
+        } else if (this.timeout) {
           setTimeout(() => {
             this._queue.delete(message.id);
             reject(new TimeoutError('request timeout (client interrupt)'));

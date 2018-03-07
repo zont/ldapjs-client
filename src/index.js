@@ -27,14 +27,14 @@ class Client {
       if (msg instanceof SearchEntry || msg instanceof SearchReference) {
         this._queue.get(msg.id).result.push(msg.object);
       } else {
-        const { resolve, reject, result, type } = this._queue.get(msg.id);
+        const { resolve, reject, result, request } = this._queue.get(msg.id);
 
         if (msg instanceof Response) {
           if (msg.status !== LDAP_SUCCESS) {
             reject(getError(msg));
           }
 
-          resolve(type === 'SearchRequest' ? result : msg.object);
+          resolve(request instanceof Search ? result : msg.object);
         } else if (msg instanceof Error) {
           reject(msg);
         } else {
@@ -166,10 +166,10 @@ class Client {
 
     return new Promise((resolve, reject) => {
       try {
-        this._queue.set(message.id, { resolve, reject, type: message.type, result: [] });
+        this._queue.set(message.id, { resolve, reject, request: message, result: [] });
         this._socket.write(message.toBer());
 
-        if (message.type === 'UnbindRequest') {
+        if (message instanceof Unbind) {
           this._socket.removeAllListeners('close');
           this._socket.on('close', () => resolve(new UnbindResponse()));
         }

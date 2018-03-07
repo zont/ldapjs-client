@@ -1,27 +1,19 @@
 const EventEmitter = require('events').EventEmitter;
 const assert = require('assert-plus');
 const { BerReader } = require('asn1');
-const Protocol = require('../utils/protocol');
-
-const MAP = {
-  [Protocol.LDAP_REP_ADD]: require('./response'),
-  [Protocol.LDAP_REP_BIND]: require('./response'),
-  [Protocol.LDAP_REP_DELETE]: require('./response'),
-  [Protocol.LDAP_REP_MODIFY]: require('./response'),
-  [Protocol.LDAP_REP_MODRDN]: require('./response'),
-  [Protocol.LDAP_REP_SEARCH]: require('./response'),
-  [Protocol.LDAP_REP_SEARCH_ENTRY]: require('./search_entry'),
-  [Protocol.LDAP_REP_SEARCH_REF]: require('./search_reference')
-};
+const { LDAP_REP_SEARCH_ENTRY, LDAP_REP_SEARCH_REF } = require('../utils/protocol');
+const SearchEntry = require('./search_entry');
+const SearchReference = require('./search_reference');
+const Response = require('./response');
 
 const getMessage = ber => {
   const id = ber.readInt() || 0;
   const type = ber.readSequence();
-  const Message = MAP[type];
-
-  if (!Message) {
-    throw new Error(`Op 0x${type ? type.toString(16) : '??'} not supported`);
-  }
+  const Message = type === LDAP_REP_SEARCH_ENTRY
+    ? SearchEntry
+    : type === LDAP_REP_SEARCH_REF
+      ? SearchReference
+      : Response;
 
   return new Message({ id });
 };
@@ -64,12 +56,7 @@ class Parser extends EventEmitter {
       message.parse(ber);
       this.emit('message', message);
     } catch (e) {
-      if (nextMessage) {
-        this.parse(nextMessage);
-      } else {
-        this.emit('error', e);
-      }
-      return;
+      this.emit('error', e);
     }
 
     if (nextMessage) {

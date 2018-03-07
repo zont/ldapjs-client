@@ -109,7 +109,7 @@ describe('Client', () => {
   });
 
   it('search', async () => {
-    expect.assertions(1);
+    expect.assertions(4);
 
     const client = new Client({ url: 'ldap://www.zflexldap.com' });
 
@@ -118,6 +118,9 @@ describe('Client', () => {
       const response = await client.search('ou=guests,dc=zflexsoftware,dc=com', { scope: 'sub' });
 
       expect(response.length).toBeGreaterThan(0);
+      expect(response[0].dn).toBeDefined();
+      expect(response[0].ou).toBe('guests');
+      expect(response[0].objectclass.length).toBeGreaterThan(0);
     } catch (e) {
       expect(e).toBe(null);
     }

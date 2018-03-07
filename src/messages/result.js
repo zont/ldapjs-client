@@ -11,13 +11,7 @@ module.exports = class LDAPResult extends LDAPMessage {
     assert.optionalString(options.errorMessage);
     assert.optionalArrayOfString(options.referrals);
 
-    super(options);
-
-    this.status = options.status || 0; // LDAP SUCCESS
-    this.matchedDN = options.matchedDN || '';
-    this.errorMessage = options.errorMessage || '';
-    this.referrals = options.referrals || [];
-    this.connection = options.connection || null;
+    super(Object.assign({ status: 0, matchedDN: '', errorMessage: '', referrals: [] }, options));
   }
 
   get type() {

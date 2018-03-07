@@ -6,9 +6,7 @@ const parseUrl = require('../utils/parse-url');
 
 module.exports = class SearchReference extends LDAPMessage {
   constructor(options) {
-    super(Object.assign({}, options, {protocolOp: LDAP_REP_SEARCH_REF}));
-
-    this.uris = options.uris || [];
+    super(Object.assign({ protocolOp: LDAP_REP_SEARCH_REF, uris: [] }, options));
   }
 
   get type() {

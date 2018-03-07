@@ -6,7 +6,6 @@ const Change = require('./change');
 const { NEVER_DEREF_ALIASES } = require('./protocol');
 const dn = require('./dn');
 const { getError, TimeoutError, ProtocolError, LDAP_SUCCESS } = require('./errors');
-const { parseString } = require('./filters');
 const { AddRequest, BindRequest, DeleteRequest, ModifyRequest, ModifyDNRequest, SearchRequest,
   UnbindRequest, UnbindResponse, LDAPResult, SearchEntry, SearchReference, Parser } = require('./messages');
 const parseUrl = require('./utils/parse-url');
@@ -59,7 +58,7 @@ class Client {
     assert.string(name, 'name');
     assert.optionalString(credentials, 'credentials');
 
-    return this._send(new BindRequest({ authentication: 'Simple', name, credentials }));
+    return this._send(new BindRequest({ name, credentials }));
   }
 
   async del(entry) {
@@ -85,7 +84,7 @@ class Client {
     assert.string(newName, 'newName');
 
     const newDN = dn.parse(newName);
-    const req = new ModifyDNRequest({ entry, deleteOldRdn: true });
+    const req = new ModifyDNRequest({ entry });
 
     if (newDN.rdns.length !== 1) {
       req.newRdn = dn.parse(newDN.rdns.shift().toString());
@@ -106,7 +105,7 @@ class Client {
     return this._send(new SearchRequest({
       baseObject,
       scope: options.scope || 'base',
-      filter: parseString(options.filter || '(objectclass=*)'),
+      filter: options.filter || '(objectclass=*)',
       derefAliases: options.derefAliases || NEVER_DEREF_ALIASES,
       sizeLimit: options.sizeLimit || 0,
       timeLimit: options.timeLimit || 10,

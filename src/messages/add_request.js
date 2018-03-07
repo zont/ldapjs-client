@@ -6,16 +6,10 @@ const lassert = require('../utils/assert');
 
 module.exports = class AddRequest extends LDAPMessage {
   constructor(options) {
-    options = options || {};
-    assert.object(options);
     lassert.optionalStringDN(options.entry);
     lassert.optionalArrayOfAttribute(options.attributes);
 
-    options.protocolOp = LDAP_REQ_ADD;
-    super(options);
-
-    this.entry = options.entry || null;
-    this.attributes = options.attributes ? options.attributes.slice(0) : [];
+    super(Object.assign({ protocolOp: LDAP_REQ_ADD }, options));
   }
 
   get type() {

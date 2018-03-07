@@ -11,8 +11,7 @@ module.exports = class LDAPMessage {
   constructor(options) {
     assert.object(options);
 
-    this.messageID = options.messageID || nextID();
-    this.protocolOp = options.protocolOp || undefined;
+    Object.assign(this, options, { messageID: options.messageID || nextID() });
   }
 
   get id() {

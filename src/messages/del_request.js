@@ -5,14 +5,9 @@ const lassert = require('../utils/assert');
 
 module.exports = class DeleteRequest extends LDAPMessage {
   constructor(options) {
-    options = options || {};
-    assert.object(options);
     lassert.optionalStringDN(options.entry);
 
-    options.protocolOp = LDAP_REQ_DELETE;
-    super(options);
-
-    this.entry = options.entry || null;
+    super(Object.assign({ protocolOp: LDAP_REQ_DELETE }, options));
   }
 
   get type() {

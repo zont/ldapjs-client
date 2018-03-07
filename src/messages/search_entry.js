@@ -10,10 +10,8 @@ module.exports = class SearchEntry extends LDAPMessage {
     assert.object(options);
     lassert.optionalStringDN(options.objectName);
 
-    options.protocolOp = LDAP_REP_SEARCH_ENTRY;
-    super(options);
+    super(Object.assign({ protocolOp: LDAP_REP_SEARCH_ENTRY, objectName: null }, options));
 
-    this.objectName = options.objectName || null;
     this._setAttributes(options.attributes || []);
   }
 

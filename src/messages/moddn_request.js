@@ -6,20 +6,11 @@ const lassert = require('../utils/assert');
 
 module.exports = class ModifyDNRequest extends LDAPMessage {
   constructor(options) {
-    options = options || {};
-    assert.object(options);
-    assert.optionalBool(options.deleteOldRdn);
     lassert.optionalStringDN(options.entry);
     lassert.optionalDN(options.newRdn);
     lassert.optionalDN(options.newSuperior);
 
-    options.protocolOp = LDAP_REQ_MODRDN;
-    super(options);
-
-    this.entry = options.entry || null;
-    this.newRdn = options.newRdn || null;
-    this.deleteOldRdn = options.deleteOldRdn || true;
-    this.newSuperior = options.newSuperior || null;
+    super(Object.assign({ protocolOp: LDAP_REQ_MODRDN, deleteOldRdn: true, newRdn: null, newSuperior: null }, options));
   }
 
   get type() {

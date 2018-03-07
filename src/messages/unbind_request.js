@@ -4,7 +4,7 @@ const { LDAP_REQ_UNBIND } = require('../protocol');
 
 module.exports = class UnbindRequest extends LDAPMessage {
   constructor(options) {
-    super(Object.assign({}, options, {protocolOp: LDAP_REQ_UNBIND}));
+    super(Object.assign({ protocolOp: LDAP_REQ_UNBIND }, options));
   }
 
   get type() {
@@ -12,7 +12,7 @@ module.exports = class UnbindRequest extends LDAPMessage {
   }
 
   get _dn() {
-    return this.connection ? this.connection.ldap.bindDN : new DN([new RDN({cn: 'anonymous'})]);
+    return this.connection ? this.connection.ldap.bindDN : new DN([new RDN({ cn: 'anonymous' })]);
   }
 
   _parse() {

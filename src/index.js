@@ -5,8 +5,8 @@ const Attribute = require('./attribute');
 const Change = require('./change');
 const { parse } = require('./dn');
 const { getError, ConnectionError, TimeoutError, ProtocolError, LDAP_SUCCESS } = require('./errors');
-const { AddRequest, BindRequest, DeleteRequest, ModifyRequest, ModifyDNRequest, SearchRequest,
-  UnbindRequest, UnbindResponse, LDAPResult, SearchEntry, SearchReference, Parser } = require('./messages');
+const { Add, Bind, Del, Modify, ModifyDN, Search, Unbind } = require('./requests');
+const { UnbindResponse, LDAPResult, SearchEntry, SearchReference, Parser } = require('./responses');
 const parseUrl = require('./utils/parse-url');
 
 class Client {
@@ -50,30 +50,30 @@ class Client {
     assert.string(entry, 'entry');
     assert.object(attributes, 'attributes');
 
-    return this._send(new AddRequest({ entry, attributes: Attribute.fromObject(attributes) }));
+    return this._send(new Add({ entry, attributes: Attribute.fromObject(attributes) }));
   }
 
-  async bind(name, credentials = '') {
+  async bind(name, credentials) {
     assert.string(name, 'name');
     assert.optionalString(credentials, 'credentials');
 
-    return this._send(new BindRequest({ name, credentials }));
+    return this._send(new Bind({ name, credentials }));
   }
 
   async del(entry) {
     assert.string(entry, 'entry');
 
-    return this._send(new DeleteRequest({ entry }));
+    return this._send(new Del({ entry }));
   }
 
-  async modify(object, change) {
-    assert.string(object, 'object');
+  async modify(entry, change) {
+    assert.string(entry, 'entry');
     assert.object(change, 'change');
 
     const changes = [];
     (Array.isArray(change) ? change : [change]).forEach(c => changes.push(...Change.fromObject(c)));
 
-    return this._send(new ModifyRequest({ object, changes }));
+    return this._send(new Modify({ entry, changes }));
   }
 
   async modifyDN(entry, newName) {
@@ -83,9 +83,9 @@ class Client {
     const newRdn = parse(newName);
 
     if (newRdn.rdns.length !== 1) {
-      return this._send(new ModifyDNRequest({ entry, newRdn: parse(newRdn.rdns.shift().toString()), newSuperior: newRdn }));
+      return this._send(new ModifyDN({ entry, newRdn: parse(newRdn.rdns.shift().toString()), newSuperior: newRdn }));
     } else {
-      return this._send(new ModifyDNRequest({ entry, newRdn }));
+      return this._send(new ModifyDN({ entry, newRdn }));
     }
   }
 
@@ -98,11 +98,11 @@ class Client {
     assert.optionalNumber(options.timeLimit, 'options.timeLimit');
     assert.optionalArrayOfString(options.attributes, 'options.attributes');
 
-    return this._send(new SearchRequest(Object.assign({ baseObject }, options)));
+    return this._send(new Search(Object.assign({ baseObject }, options)));
   }
 
   async unbind() {
-    return this._send(new UnbindRequest());
+    return this._send(new Unbind());
   }
 
   async destroy() {

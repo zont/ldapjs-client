@@ -1,12 +1,12 @@
 const querystring = require('querystring');
-const url = require('url');
+const { parse } = require('url');
 const assert = require('assert-plus');
 
 const PROTOCOLS = ['ldap:', 'ldaps:'];
 const SCOPES = ['base', 'one', 'sub'];
 
 module.exports = str => {
-  const u = url.parse(str);
+  const u = parse(str);
 
   assert.ok(PROTOCOLS.includes(u.protocol), `Unsupported protocol: ${u.protocol}`);
 

@@ -4,21 +4,14 @@ const { BerReader } = require('asn1');
 const Protocol = require('../utils/protocol');
 
 const MAP = {
-  [Protocol.LDAP_REQ_ADD]: require('./add_request'),
   [Protocol.LDAP_REP_ADD]: require('./add_response'),
-  [Protocol.LDAP_REQ_BIND]: require('./bind_request'),
   [Protocol.LDAP_REP_BIND]: require('./bind_response'),
-  [Protocol.LDAP_REQ_DELETE]: require('./del_request'),
   [Protocol.LDAP_REP_DELETE]: require('./del_response'),
-  [Protocol.LDAP_REQ_MODIFY]: require('./modify_request'),
   [Protocol.LDAP_REP_MODIFY]: require('./modify_response'),
-  [Protocol.LDAP_REQ_MODRDN]: require('./moddn_request'),
   [Protocol.LDAP_REP_MODRDN]: require('./moddn_response'),
-  [Protocol.LDAP_REQ_SEARCH]: require('./search_request'),
   [Protocol.LDAP_REP_SEARCH]: require('./search_response'),
   [Protocol.LDAP_REP_SEARCH_ENTRY]: require('./search_entry'),
-  [Protocol.LDAP_REP_SEARCH_REF]: require('./search_reference'),
-  [Protocol.LDAP_REQ_UNBIND]: require('./unbind_request')
+  [Protocol.LDAP_REP_SEARCH_REF]: require('./search_reference')
 };
 
 class Parser extends EventEmitter {
@@ -30,7 +23,7 @@ class Parser extends EventEmitter {
   getMessage(ber) {
     assert.ok(ber);
 
-    const messageID = ber.readInt();
+    const id = ber.readInt() || 0;
     const type = ber.readSequence();
     const Message = MAP[type];
 
@@ -39,7 +32,7 @@ class Parser extends EventEmitter {
       return false;
     }
 
-    return new Message({ messageID });
+    return new Message({ id });
   }
 
   write(data) {

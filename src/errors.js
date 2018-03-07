@@ -1,5 +1,5 @@
 const assert = require('assert-plus');
-const { LDAPResult } = require('./messages');
+const { LDAPResult } = require('./responses');
 const CODES = require('./utils/error-codes');
 
 const ERRORS = {};

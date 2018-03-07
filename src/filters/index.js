@@ -1,7 +1,4 @@
-const assert = require('assert-plus');
-const { BerReader } = require('asn1');
 const ldapFilter = require('ldap-filter');
-const Protocol = require('../utils/protocol');
 const AndFilter = require('./and_filter');
 const ApproximateFilter = require('./approx_filter');
 const EqualityFilter = require('./equality_filter');
@@ -12,78 +9,6 @@ const NotFilter = require('./not_filter');
 const OrFilter = require('./or_filter');
 const PresenceFilter = require('./presence_filter');
 const SubstringFilter = require('./substr_filter');
-
-const parseSet = ber => {
-  const filters = [];
-  const end = ber.offset + ber.length;
-
-  while (ber.offset < end) {
-    filters.push(_parse(ber));
-  }
-
-  return filters;
-};
-
-const _parse = ber => {
-  assert.ok(ber instanceof BerReader, 'ber (BerReader) required');
-
-  let f;
-
-  const type = ber.readSequence();
-  switch (type) {
-    case Protocol.FILTER_AND:
-      f = new AndFilter({ filters: parseSet(ber) });
-      break;
-
-    case Protocol.FILTER_APPROX:
-      f = new ApproximateFilter();
-      f.parse(ber);
-      break;
-
-    case Protocol.FILTER_EQUALITY:
-      f = new EqualityFilter();
-      f.parse(ber);
-      break;
-
-    case Protocol.FILTER_EXT:
-      f = new ExtensibleFilter();
-      f.parse(ber);
-      break;
-
-    case Protocol.FILTER_GE:
-      f = new GreaterThanEqualsFilter();
-      f.parse(ber);
-      break;
-
-    case Protocol.FILTER_LE:
-      f = new LessThanEqualsFilter();
-      f.parse(ber);
-      break;
-
-    case Protocol.FILTER_NOT:
-      f = new NotFilter({ filter: _parse(ber) });
-      break;
-
-    case Protocol.FILTER_OR:
-      f = new OrFilter({ filters: parseSet(ber) });
-      break;
-
-    case Protocol.FILTER_PRESENT:
-      f = new PresenceFilter();
-      f.parse(ber);
-      break;
-
-    case Protocol.FILTER_SUBSTRINGS:
-      f = new SubstringFilter();
-      f.parse(ber);
-      break;
-
-    default:
-      throw new Error(`Invalid search filter type: 0x${type.toString(16)}`);
-  }
-
-  return f;
-};
 
 const cloneFilter = input => {
   switch (input.type) {
@@ -113,7 +38,5 @@ const cloneFilter = input => {
 };
 
 module.exports = {
-  parse: ber => _parse(ber),
-  parseString: str => cloneFilter(ldapFilter.parse(str)),
-  PresenceFilter
+  parseString: str => cloneFilter(ldapFilter.parse(str))
 };

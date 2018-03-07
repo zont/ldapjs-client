@@ -155,7 +155,7 @@ class Client {
         destroy();
         reject(e || new Error('client error during setup'));
       });
-      this._socket.on('data', data => this._parser.write(data));
+      this._socket.on('data', data => this._parser.parse(data));
     });
   }
 

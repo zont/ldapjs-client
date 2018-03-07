@@ -18,10 +18,6 @@ class Attribute {
       this.vals = options.vals;
   }
 
-  get buffers() {
-    return this._vals;
-  }
-
   get json() {
     return {
       type: this.type,

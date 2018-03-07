@@ -83,53 +83,6 @@ class Change {
     };
   }
 
-  static apply(change, obj, scalar) {
-    assert.string(change.operation);
-    assert.string(change.modification.type);
-    assert.ok(Array.isArray(change.modification.vals));
-    assert.object(obj);
-
-    const type = change.modification.type;
-    const vals = change.modification.vals;
-    let data = obj[type];
-    if (data !== undefined) {
-      if (!Array.isArray(data)) {
-        data = [data];
-      }
-    } else {
-      data = [];
-    }
-    switch (change.operation) {
-      case 'replace':
-        if (vals.length === 0) {
-          delete obj[type];
-          return obj;
-        } else {
-          data = vals;
-        }
-        break;
-      case 'add':
-        data.push(...vals.filter(entry => !data.inlcudes(entry)));
-        break;
-      case 'delete':
-        data = data.filter(entry => !vals.includes(entry));
-        if (data.length === 0) {
-          delete obj[type];
-          return obj;
-        }
-        break;
-      default:
-        break;
-    }
-    if (scalar && data.length === 1) {
-      // store single-value outputs as scalars, if requested
-      obj[type] = data[0];
-    } else {
-      obj[type] = data;
-    }
-    return obj;
-  }
-
   static compare(a, b) {
     assert.ok(Change.isChange(a) && Change.isChange(b), 'can only compare Changes');
 

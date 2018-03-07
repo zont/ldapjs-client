@@ -103,18 +103,13 @@ class Client {
   async search(baseObject, options) {
     assert.string(baseObject, 'baseObject');
     assert.object(options, 'options');
+    assert.optionalString(options.filter, 'options.filter');
     assert.optionalArrayOfString(options.attributes, 'options.attributes');
-
-    options.filter = options.filter || '(objectclass=*)';
-
-    assert.string(options.filter, 'options.filter');
-
-    options.filter = parseString(options.filter);
 
     return this._send(new SearchRequest({
       baseObject,
       scope: options.scope || 'base',
-      filter: options.filter,
+      filter: parseString(options.filter || '(objectclass=*)'),
       derefAliases: options.derefAliases || NEVER_DEREF_ALIASES,
       sizeLimit: options.sizeLimit || 0,
       timeLimit: options.timeLimit || 10,

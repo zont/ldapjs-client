@@ -3,7 +3,6 @@ const { LDAP_REP_REFERRAL } = require('../utils/protocol');
 
 module.exports = class {
   constructor(options) {
-    assert.object(options);
     assert.optionalNumber(options.status);
     assert.optionalString(options.matchedDN);
     assert.optionalString(options.errorMessage);

@@ -13,15 +13,15 @@ const OrFilter = require('./or_filter');
 const PresenceFilter = require('./presence_filter');
 const SubstringFilter = require('./substr_filter');
 
+const parseSet = (f, ber) => {
+  const end = ber.offset + ber.length;
+  while (ber.offset < end) {
+    f.addFilter(_parse(ber));
+  }
+};
+
 const _parse = ber => {
   assert.ok(ber);
-
-  const parseSet = f => {
-    const end = ber.offset + ber.length;
-    while (ber.offset < end) {
-      f.addFilter(_parse(ber));
-    }
-  };
 
   let f;
 
@@ -29,7 +29,7 @@ const _parse = ber => {
   switch (type) {
     case Protocol.FILTER_AND:
       f = new AndFilter();
-      parseSet(f);
+      parseSet(f, ber);
       break;
 
     case Protocol.FILTER_APPROX:
@@ -65,7 +65,7 @@ const _parse = ber => {
 
     case Protocol.FILTER_OR:
       f = new OrFilter();
-      parseSet(f);
+      parseSet(f, ber);
       break;
 
     case Protocol.FILTER_PRESENT:

@@ -94,15 +94,6 @@ module.exports = class SearchEntry extends LDAPMessage {
     }
   }
 
-  _json(j) {
-    assert.ok(j);
-
-    j.objectName = this.objectName.toString();
-    j.attributes = this.attributes.map(a => a.json || a);
-
-    return j;
-  }
-
   _parse(ber) {
     assert.ok(ber);
 

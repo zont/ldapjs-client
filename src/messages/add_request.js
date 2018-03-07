@@ -39,8 +39,7 @@ module.exports = class AddRequest extends LDAPMessage {
       a.parse(ber);
       a.type = a.type.toLowerCase();
       if (a.type === 'objectclass') {
-        for (let i = 0; i < a.vals.length; ++i)
-          a.vals[i] = a.vals[i].toLowerCase();
+        a.vals = a.vals.map(i => i.toLowerCase());
       }
       this.attributes.push(a);
     }
@@ -58,15 +57,6 @@ module.exports = class AddRequest extends LDAPMessage {
     ber.endSequence();
 
     return ber;
-  }
-
-  _json(j) {
-    assert.ok(j);
-
-    j.entry = this.entry.toString();
-    j.attributes = this.attributes.map(a => a.json);
-
-    return j;
   }
 
   indexOf(attr) {

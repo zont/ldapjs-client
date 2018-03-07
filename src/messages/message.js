@@ -21,14 +21,6 @@ module.exports = class LDAPMessage {
     return 'LDAPMessage';
   }
 
-  get json() {
-    return this._json({ messageID: this.messageID, protocolOp: this.type });
-  }
-
-  toString() {
-    return JSON.stringify(this.json);
-  }
-
   parse(ber) {
     assert.ok(ber);
 

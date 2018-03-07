@@ -41,12 +41,4 @@ module.exports = class DeleteRequest extends LDAPMessage {
 
     return ber;
   }
-
-  _json(j) {
-    assert.ok(j);
-
-    j.entry = this.entry;
-
-    return j;
-  }
 };

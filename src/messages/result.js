@@ -24,20 +24,6 @@ module.exports = class LDAPResult extends LDAPMessage {
     return 'LDAPResult';
   }
 
-  end(status) {
-    assert.ok(this.connection);
-
-    if (typeof status === 'number') {
-      this.status = status;
-    }
-
-    try {
-      this.connection.write(this.toBer());
-    } catch (e) {
-      console.warn(e, '%s failure to write message %j', this.connection.ldap.id, this.json);
-    }
-  }
-
   _parse(ber) {
     assert.ok(ber);
 
@@ -68,16 +54,5 @@ module.exports = class LDAPResult extends LDAPMessage {
     }
 
     return ber;
-  }
-
-  _json(j) {
-    assert.ok(j);
-
-    j.status = this.status;
-    j.matchedDN = this.matchedDN;
-    j.errorMessage = this.errorMessage;
-    j.referrals = this.referrals;
-
-    return j;
   }
 };

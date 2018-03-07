@@ -100,19 +100,4 @@ module.exports = class SearchRequest extends LDAPMessage {
 
     return ber;
   }
-
-  _json(j) {
-    assert.ok(j);
-
-    j.baseObject = this.baseObject;
-    j.scope = this.scope;
-    j.derefAliases = this.derefAliases;
-    j.sizeLimit = this.sizeLimit;
-    j.timeLimit = this.timeLimit;
-    j.typesOnly = this.typesOnly;
-    j.filter = this.filter.toString();
-    j.attributes = this.attributes;
-
-    return j;
-  }
 };

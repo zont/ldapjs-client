@@ -54,13 +54,4 @@ module.exports = class ModifyRequest extends LDAPMessage {
 
     return ber;
   }
-
-  _json(j) {
-    assert.ok(j);
-
-    j.object = this.object;
-    j.changes = this.changes.map(c => c.json);
-
-    return j;
-  }
 };

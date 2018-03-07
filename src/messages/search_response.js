@@ -63,7 +63,7 @@ module.exports = class SearchResponse extends LDAPResult {
       });
 
     } catch (e) {
-      console.warn(e, '%s failure to write message %j', this.connection.ldap.id, this.json);
+      console.warn(e, '%s failure to write message %j', this.connection.ldap.id, this.type);
     }
   }
 

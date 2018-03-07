@@ -47,15 +47,4 @@ module.exports = class BindRequest extends LDAPMessage {
 
     return ber;
   }
-
-  _json(j) {
-    assert.ok(j);
-
-    j.version = this.version;
-    j.name = this.name;
-    j.authenticationType = this.authentication;
-    j.credentials = this.credentials;
-
-    return j;
-  }
 };

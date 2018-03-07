@@ -5,17 +5,12 @@ const LDAPResult = require('./result');
 const Protocol = require('../protocol');
 
 const MAP = {
-  [Protocol.LDAP_REQ_ABANDON]: require('./abandon_request'),
   [Protocol.LDAP_REQ_ADD]: require('./add_request'),
   [Protocol.LDAP_REP_ADD]: require('./add_response'),
   [Protocol.LDAP_REQ_BIND]: require('./bind_request'),
   [Protocol.LDAP_REP_BIND]: require('./bind_response'),
-  [Protocol.LDAP_REQ_COMPARE]: require('./compare_request'),
-  [Protocol.LDAP_REP_COMPARE]: require('./compare_response'),
   [Protocol.LDAP_REQ_DELETE]: require('./del_request'),
   [Protocol.LDAP_REP_DELETE]: require('./del_response'),
-  [Protocol.LDAP_REQ_EXTENSION]: require('./ext_request'),
-  [Protocol.LDAP_REP_EXTENSION]: require('./ext_response'),
   [Protocol.LDAP_REQ_MODIFY]: require('./modify_request'),
   [Protocol.LDAP_REP_MODIFY]: require('./modify_response'),
   [Protocol.LDAP_REQ_MODRDN]: require('./moddn_request'),

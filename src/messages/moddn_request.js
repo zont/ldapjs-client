@@ -59,15 +59,4 @@ module.exports = class ModifyDNRequest extends LDAPMessage {
 
     return ber;
   }
-
-  _json(j) {
-    assert.ok(j);
-
-    j.entry = this.entry.toString();
-    j.newRdn = this.newRdn.toString();
-    j.deleteOldRdn = this.deleteOldRdn;
-    j.newSuperior = this.newSuperior ? this.newSuperior.toString() : '';
-
-    return j;
-  }
 };

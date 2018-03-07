@@ -1,4 +1,3 @@
-const assert = require('assert-plus');
 const LDAPResult = require('./result');
 
 module.exports = class UnbindResponse extends LDAPResult {
@@ -8,10 +7,5 @@ module.exports = class UnbindResponse extends LDAPResult {
 
   get type() {
     return 'UnbindResponse';
-  }
-
-  end() {
-    assert.ok(this.connection);
-    this.connection.end();
   }
 };

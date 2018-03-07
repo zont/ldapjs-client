@@ -48,12 +48,6 @@ module.exports = class SearchReference extends LDAPMessage {
     return true;
   }
 
-  _json(j) {
-    assert.ok(j);
-    j.uris = this.uris.slice();
-    return j;
-  }
-
   _parse(ber, length) {
     assert.ok(ber);
 

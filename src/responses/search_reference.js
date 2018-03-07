@@ -1,4 +1,3 @@
-const assert = require('assert-plus');
 const Response = require('./response');
 const { LDAP_REP_SEARCH_REF } = require('../utils/protocol');
 const { DN } = require('../dn');
@@ -9,25 +8,11 @@ module.exports = class extends Response {
     super(Object.assign({ protocolOp: LDAP_REP_SEARCH_REF, uris: [], type: 'SearchReference' }, options));
   }
 
-  get dn() {
-    return new DN();
-  }
-
   get object() {
     return {
-      dn: this.dn.toString(),
-      uris: this.uris.slice()
+      dn: new DN().toString(),
+      uris: this.uris
     };
-  }
-
-  get urls() {
-    return this.uris;
-  }
-
-  set ulrs(val) {
-    assert.ok(val);
-    assert.ok(Array.isArray(val));
-    this.uris = val.slice();
   }
 
   parse(ber) {

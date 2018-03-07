@@ -12,8 +12,8 @@ module.exports = class {
     Object.assign(this, { status: 0, matchedDN: '', errorMessage: '', referrals: [], type: 'Response' }, options);
   }
 
-  get dn() {
-    return '';
+  get object() {
+    return this;
   }
 
   parse(ber) {

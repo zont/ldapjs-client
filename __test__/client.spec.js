@@ -22,13 +22,9 @@ describe('Client', () => {
 
     const client = new Client({ url: 'ldap://www.zflexldap.com' });
 
-    try {
-      await client.destroy();
+    await client.destroy();
 
-      expect(true).toBeTruthy();
-    } catch (e) {
-      expect(e).toBe(null);
-    }
+    expect(true).toBeTruthy();
   });
 
   it('bind', async () => {
@@ -36,13 +32,9 @@ describe('Client', () => {
 
     const client = new Client({ url: 'ldap://www.zflexldap.com' });
 
-    try {
-      await client.bind('cn=ro_admin,ou=sysadmins,dc=zflexsoftware,dc=com', 'zflexpass');
+    await client.bind('cn=ro_admin,ou=sysadmins,dc=zflexsoftware,dc=com', 'zflexpass');
 
-      expect(true).toBeTruthy();
-    } catch (e) {
-      expect(e).toBe(null);
-    }
+    expect(true).toBeTruthy();
 
     await client.destroy();
   });
@@ -113,17 +105,27 @@ describe('Client', () => {
 
     const client = new Client({ url: 'ldap://www.zflexldap.com' });
 
-    try {
-      await client.bind('cn=ro_admin,ou=sysadmins,dc=zflexsoftware,dc=com', 'zflexpass');
-      const response = await client.search('ou=guests,dc=zflexsoftware,dc=com', { scope: 'sub' });
+    await client.bind('cn=ro_admin,ou=sysadmins,dc=zflexsoftware,dc=com', 'zflexpass');
+    const response = await client.search('ou=guests,dc=zflexsoftware,dc=com', { scope: 'sub' });
 
-      expect(response.length).toBeGreaterThan(0);
-      expect(response[0].dn).toBeDefined();
-      expect(response[0].ou).toBe('guests');
-      expect(response[0].objectclass.length).toBeGreaterThan(0);
-    } catch (e) {
-      expect(e).toBe(null);
-    }
+    expect(response.length).toBeGreaterThan(0);
+    expect(response[0].dn).toBeDefined();
+    expect(response[0].ou).toBe('guests');
+    expect(response[0].objectclass.length).toBeGreaterThan(0);
+
+    await client.destroy();
+  });
+
+  it('search not found', async () => {
+    expect.assertions(2);
+
+    const client = new Client({ url: 'ldap://www.zflexldap.com' });
+
+    await client.bind('cn=ro_admin,ou=sysadmins,dc=zflexsoftware,dc=com', 'zflexpass');
+    const response = await client.search('ou=guests,dc=zflexsoftware,dc=com', { filter: '(ou=sysadmins)', scope: 'sub' });
+
+    expect(Array.isArray(response)).toBeTruthy();
+    expect(response.length).toBe(0);
 
     await client.destroy();
   });
@@ -133,17 +135,13 @@ describe('Client', () => {
 
     const client = new Client({ url: 'ldap://www.zflexldap.com' });
 
-    try {
-      await client.bind('cn=ro_admin,ou=sysadmins,dc=zflexsoftware,dc=com', 'zflexpass');
+    await client.bind('cn=ro_admin,ou=sysadmins,dc=zflexsoftware,dc=com', 'zflexpass');
 
-      expect(true).toBeTruthy();
+    expect(true).toBeTruthy();
 
-      await client.unbind();
+    await client.unbind();
 
-      expect(true).toBeTruthy();
-    } catch (e) {
-      expect(e).toBe(null);
-    }
+    expect(true).toBeTruthy();
 
     await client.destroy();
   });

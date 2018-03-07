@@ -169,7 +169,6 @@ class Client {
         this._queue.set(message.id, { resolve, reject, type: message.type, result: [] });
         this._socket.write(message.toBer());
 
-
         if (message.type === 'UnbindRequest') {
           this._socket.removeAllListeners('close');
           this._socket.on('close', () => resolve(new UnbindResponse()));
@@ -177,7 +176,9 @@ class Client {
 
         if (this.timeout) {
           setTimeout(() => {
-            this._queue.delete(message.id);
+            if (this._queue) {
+              this._queue.delete(message.id);
+            }
             reject(new TimeoutError('request timeout (client interrupt)'));
           }, this.timeout);
         }

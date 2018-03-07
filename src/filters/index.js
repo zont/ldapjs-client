@@ -2,7 +2,6 @@ const assert = require('assert-plus');
 const { BerReader } = require('asn1');
 const parents = require('ldap-filter');
 const Protocol = require('../protocol');
-const Filter = require('./filter');
 const AndFilter = require('./and_filter');
 const ApproximateFilter = require('./approx_filter');
 const EqualityFilter = require('./equality_filter');
@@ -89,19 +88,13 @@ const _parse = ber => {
 };
 
 const cloneFilter = input => {
-  let child;
-  if (input.type === 'and' || input.type === 'or') {
-    child = input.filters.map(cloneFilter);
-  } else if (input.type === 'not') {
-    child = cloneFilter(input.filter);
-  }
   switch (input.type) {
     case 'and':
-      return new AndFilter({ filters: child });
+      return new AndFilter({ filters: input.filters.map(cloneFilter) });
     case 'or':
-      return new OrFilter({ filters: child });
+      return new OrFilter({ filters: input.filters.map(cloneFilter) });
     case 'not':
-      return new NotFilter({ filter: child });
+      return new NotFilter({ filter: cloneFilter(input.filter) });
     case 'equal':
       return new EqualityFilter(input);
     case 'substring':
@@ -131,6 +124,5 @@ module.exports = {
     return cloneFilter(parents.parse(str));
   },
 
-  isFilter: Filter.isFilter,
   PresenceFilter
 };

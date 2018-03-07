@@ -2,7 +2,7 @@ const assert = require('assert-plus');
 const { Ber } = require('asn1');
 const LDAPMessage = require('./message');
 const dn = require('../dn');
-const filters = require('../filters');
+const { parse, PresenceFilter } = require('../filters');
 const { LDAP_REQ_SEARCH, NEVER_DEREF_ALIASES, SCOPE_BASE_OBJECT, SCOPE_ONE_LEVEL, SCOPE_SUBTREE } = require('../protocol');
 
 module.exports = class SearchRequest extends LDAPMessage {
@@ -67,7 +67,7 @@ module.exports = class SearchRequest extends LDAPMessage {
     this.timeLimit = ber.readInt();
     this.typesOnly = ber.readBoolean();
 
-    this.filter = filters.parse(ber);
+    this.filter = parse(ber);
 
     if (ber.peek() === 0x30) {
       ber.readSequence();
@@ -89,7 +89,7 @@ module.exports = class SearchRequest extends LDAPMessage {
     ber.writeInt(this.timeLimit);
     ber.writeBoolean(this.typesOnly);
 
-    const f = this.filter || new filters.PresenceFilter({ attribute: 'objectclass' });
+    const f = this.filter || new PresenceFilter({ attribute: 'objectclass' });
     ber = f.toBer(ber);
 
     ber.startSequence(Ber.Sequence | Ber.Constructor);

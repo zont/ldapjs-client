@@ -16,15 +16,6 @@ const TYPES = {
 };
 
 module.exports = {
-  isFilter(filter) {
-    if (!filter || typeof filter !== 'object') {
-      return false;
-    }
-
-    // Do our best to duck-type it
-    return typeof filter.toBer === 'function' && typeof filter.matches === 'function' && TYPES[filter.type] !== undefined;
-  },
-
   mixin(target) {
     target.prototype.toBer = function(ber) {
       assert.ok(ber instanceof BerWriter, 'ber (BerWriter) required');

@@ -1,6 +1,6 @@
 const { AssertionError } = require('assert');
-const { DN: { isDN } } = require('./dn');
-const { isAttribute } = require('./attribute');
+const { DN: { isDN } } = require('../dn');
+const { isAttribute } = require('../attribute');
 
 const _assert = (arg, expected, name) => {
   throw new AssertionError({

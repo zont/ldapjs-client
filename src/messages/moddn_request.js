@@ -2,7 +2,7 @@ const assert = require('assert-plus');
 const LDAPMessage = require('./message');
 const { LDAP_REQ_MODRDN } = require('../protocol');
 const dn = require('../dn');
-const lassert = require('../assert');
+const lassert = require('../utils/assert');
 
 module.exports = class ModifyDNRequest extends LDAPMessage {
   constructor(options) {

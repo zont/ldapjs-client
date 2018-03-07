@@ -98,15 +98,7 @@ class Client {
     assert.optionalNumber(options.timeLimit, 'options.timeLimit');
     assert.optionalArrayOfString(options.attributes, 'options.attributes');
 
-    return this._send(new SearchRequest({
-      baseObject,
-      scope: options.scope || 'base',
-      filter: options.filter || '(objectclass=*)',
-      sizeLimit: options.sizeLimit || 0,
-      timeLimit: options.timeLimit || 10,
-      typesOnly: options.typesOnly || false,
-      attributes: options.attributes || []
-    }));
+    return this._send(new SearchRequest(Object.assign({ baseObject }, options)));
   }
 
   async unbind() {

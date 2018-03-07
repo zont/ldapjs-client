@@ -6,7 +6,11 @@ const { LDAP_REQ_SEARCH, NEVER_DEREF_ALIASES, SCOPE_BASE_OBJECT, SCOPE_ONE_LEVEL
 
 module.exports = class SearchRequest extends LDAPMessage {
   constructor(options) {
-    super(Object.assign(options, { derefAliases: NEVER_DEREF_ALIASES, protocolOp: LDAP_REQ_SEARCH, filter: parseString(options.filter) }));
+    super(Object.assign(
+      { derefAliases: NEVER_DEREF_ALIASES, protocolOp: LDAP_REQ_SEARCH, scope: 'base', sizeLimit: 0, timeLimit: 10, typesOnly: false, attributes: [] },
+      options,
+      { filter: parseString(options.filter || '(objectclass=*)') }
+    ));
   }
 
   get type() {

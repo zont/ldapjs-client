@@ -1,7 +1,6 @@
 const EventEmitter = require('events').EventEmitter;
 const assert = require('assert-plus');
 const { BerReader } = require('asn1');
-const LDAPResult = require('./result');
 const Protocol = require('../protocol');
 
 const MAP = {
@@ -36,7 +35,7 @@ class Parser extends EventEmitter {
     const Message = MAP[type];
 
     if (!Message) {
-      this.emit('error', new Error(`Op 0x${type ? type.toString(16) : '??'} not supported`), new LDAPResult({ messageID, protocolOp: type || Protocol.LDAP_REP_EXTENSION }));
+      this.emit('error', new Error(`Op 0x${type ? type.toString(16) : '??'} not supported`));
       return false;
     }
 

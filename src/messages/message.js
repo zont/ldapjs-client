@@ -1,11 +1,17 @@
 const assert = require('assert-plus');
 const { BerWriter } = require('asn1');
 
+let id = 0;
+const nextID = () => {
+  id = Math.max(1, (id + 1) % 2147483647);
+  return id;
+};
+
 module.exports = class LDAPMessage {
   constructor(options) {
     assert.object(options);
 
-    this.messageID = options.messageID || 0;
+    this.messageID = options.messageID || nextID();
     this.protocolOp = options.protocolOp || undefined;
   }
 
@@ -32,7 +38,7 @@ module.exports = class LDAPMessage {
   toBer() {
     let writer = new BerWriter();
     writer.startSequence();
-    writer.writeInt(this.messageID);
+    writer.writeInt(this.id);
     writer.startSequence(this.protocolOp);
     if (this._toBer) {
       writer = this._toBer(writer);

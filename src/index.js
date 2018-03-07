@@ -22,15 +22,12 @@ class Client {
     Object.assign(this, options, url);
 
     this._queue = new Map();
-    this._id = 0;
 
     this._parser = new Parser();
     this._parser.on('error', e => console.error(e));
     this._parser.on('message', msg => {
       if (msg instanceof SearchEntry || msg instanceof SearchReference) {
-        const entry = this._queue.get(msg.id);
-        entry.result = entry.result || [];
-        entry.result.push(msg.object);
+        this._queue.get(msg.id).result.push(msg.object);
       } else {
         const { resolve, reject, result, type } = this._queue.get(msg.id);
 
@@ -39,7 +36,7 @@ class Client {
             reject(getError(msg));
           }
 
-          resolve(type === 'SearchRequest' ? result || [] : msg.object);
+          resolve(type === 'SearchRequest' ? result : msg.object);
         } else if (msg instanceof Error) {
           reject(msg);
         } else {
@@ -143,11 +140,6 @@ class Client {
     }
   }
 
-  get _nextId() {
-    this._id = Math.max(1, (this._id + 1) % 2147483647);
-    return this._id;
-  }
-
   async _connect() {
     return new Promise((resolve, reject) => {
       const errorHandler = err => {
@@ -179,16 +171,14 @@ class Client {
       await this._connect();
     }
 
-    message.messageID = this._nextId;
-
     return new Promise((resolve, reject) => {
       try {
-        this._queue.set(message.id, { resolve, reject, type: message.type });
+        this._queue.set(message.id, { resolve, reject, type: message.type, result: [] });
         this._socket.write(message.toBer());
 
         if (message.type === 'UnbindRequest') {
           this._queue.delete(message.id);
-          resolve(new UnbindResponse({ messageID: message.id }));
+          resolve(new UnbindResponse());
         } else if (this.timeout) {
           setTimeout(() => {
             this._queue.delete(message.id);

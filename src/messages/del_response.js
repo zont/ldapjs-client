@@ -1,5 +1,5 @@
 const LDAPResult = require('./result');
-const { LDAP_REP_DELETE } = require('../protocol');
+const { LDAP_REP_DELETE } = require('../utils/protocol');
 
 module.exports = class DeleteResponse extends LDAPResult {
   constructor(options) {

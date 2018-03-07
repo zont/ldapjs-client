@@ -1,7 +1,7 @@
 const assert = require('assert-plus');
 const parents = require('ldap-filter');
 const { BerWriter } = require('asn1');
-const { FILTER_APPROX } = require('../protocol');
+const { FILTER_APPROX } = require('../utils/protocol');
 
 module.exports = class ApproximateFilter extends parents.ApproximateFilter {
   parse(ber) {

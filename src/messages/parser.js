@@ -1,7 +1,7 @@
 const EventEmitter = require('events').EventEmitter;
 const assert = require('assert-plus');
 const { BerReader } = require('asn1');
-const Protocol = require('../protocol');
+const Protocol = require('../utils/protocol');
 
 const MAP = {
   [Protocol.LDAP_REQ_ADD]: require('./add_request'),

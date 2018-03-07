@@ -1,7 +1,7 @@
 const assert = require('assert');
 const parents = require('ldap-filter');
 const { BerWriter } = require('asn1');
-const { FILTER_SUBSTRINGS } = require('../protocol');
+const { FILTER_SUBSTRINGS } = require('../utils/protocol');
 
 module.exports = class SubstringFilter extends parents.SubstringFilter {
   parse(ber) {

@@ -1,5 +1,5 @@
 const LDAPResult = require('./result');
-const { LDAP_REP_MODRDN } = require('../protocol');
+const { LDAP_REP_MODRDN } = require('../utils/protocol');
 
 module.exports = class ModifyDNResponse extends LDAPResult {
   constructor(options) {

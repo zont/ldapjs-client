@@ -1,6 +1,6 @@
 const assert = require('assert-plus');
 const LDAPMessage = require('./message');
-const { LDAP_REP_REFERRAL } = require('../protocol');
+const { LDAP_REP_REFERRAL } = require('../utils/protocol');
 
 module.exports = class LDAPResult extends LDAPMessage {
   constructor(options) {

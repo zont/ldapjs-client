@@ -1,7 +1,7 @@
 const assert = require('assert-plus');
 const { BerReader } = require('asn1');
 const ldapFilter = require('ldap-filter');
-const Protocol = require('../protocol');
+const Protocol = require('../utils/protocol');
 const AndFilter = require('./and_filter');
 const ApproximateFilter = require('./approx_filter');
 const EqualityFilter = require('./equality_filter');

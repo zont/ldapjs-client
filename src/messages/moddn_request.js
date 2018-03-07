@@ -1,6 +1,6 @@
 const assert = require('assert-plus');
 const LDAPMessage = require('./message');
-const { LDAP_REQ_MODRDN } = require('../protocol');
+const { LDAP_REQ_MODRDN } = require('../utils/protocol');
 const dn = require('../dn');
 const lassert = require('../utils/assert');
 

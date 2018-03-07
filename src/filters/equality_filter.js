@@ -1,7 +1,7 @@
 const assert = require('assert-plus');
 const parents = require('ldap-filter');
 const { Ber: { OctetString }, BerWriter } = require('asn1');
-const { FILTER_EQUALITY } = require('../protocol');
+const { FILTER_EQUALITY } = require('../utils/protocol');
 
 module.exports = class EqualityFilter extends parents.EqualityFilter {
   matches(target, strictAttrCase) {

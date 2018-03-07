@@ -1,7 +1,7 @@
 const assert = require('assert-plus');
 const LDAPMessage = require('./message');
 const Attribute = require('../attribute');
-const { LDAP_REQ_ADD } = require('../protocol');
+const { LDAP_REQ_ADD } = require('../utils/protocol');
 const lassert = require('../utils/assert');
 
 module.exports = class AddRequest extends LDAPMessage {

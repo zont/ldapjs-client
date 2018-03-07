@@ -1,6 +1,6 @@
 const assert = require('assert-plus');
 const asn1 = require('asn1');
-const Protocol = require('./protocol');
+const Protocol = require('./utils/protocol');
 
 const _bufferEncoding = type =>  /;binary$/.test(type) ? 'base64' : 'utf8';
 

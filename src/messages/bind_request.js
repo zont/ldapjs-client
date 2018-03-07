@@ -1,11 +1,11 @@
 const assert = require('assert-plus');
 const { Ber: { Context } } = require('asn1');
 const LDAPMessage = require('./message');
-const { LDAP_REQ_BIND } = require('../protocol');
+const { LDAP_REQ_BIND, LDAP_VERSION_3 } = require('../utils/protocol');
 
 module.exports = class BindRequest extends LDAPMessage {
   constructor(options) {
-    super(Object.assign({ protocolOp: LDAP_REQ_BIND, version: 0x03, credentials: '' }, options));
+    super(Object.assign({ protocolOp: LDAP_REQ_BIND, version: LDAP_VERSION_3, credentials: '' }, options));
   }
 
   get type() {

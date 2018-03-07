@@ -1,7 +1,7 @@
 const assert = require('assert');
 const parents = require('ldap-filter');
 const { BerWriter } = require('asn1');
-const { FILTER_OR } = require('../protocol');
+const { FILTER_OR } = require('../utils/protocol');
 
 module.exports = class OrFilter extends parents.OrFilter {
   toBer(ber) {

@@ -1,6 +1,6 @@
 const assert = require('assert-plus');
 const LDAPMessage = require('./message');
-const { LDAP_REQ_DELETE } = require('../protocol');
+const { LDAP_REQ_DELETE } = require('../utils/protocol');
 const lassert = require('../utils/assert');
 
 module.exports = class DeleteRequest extends LDAPMessage {

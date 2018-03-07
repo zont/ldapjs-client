@@ -1,6 +1,6 @@
 const LDAPMessage = require('./message');
 const { DN, RDN } = require('../dn');
-const { LDAP_REQ_UNBIND } = require('../protocol');
+const { LDAP_REQ_UNBIND } = require('../utils/protocol');
 
 module.exports = class UnbindRequest extends LDAPMessage {
   constructor(options) {

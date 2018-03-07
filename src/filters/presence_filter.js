@@ -1,7 +1,7 @@
 const assert = require('assert');
 const parents = require('ldap-filter');
 const { BerWriter } = require('asn1');
-const { FILTER_PRESENT } = require('../protocol');
+const { FILTER_PRESENT } = require('../utils/protocol');
 
 module.exports = class PresenceFilter extends parents.PresenceFilter {
   parse(ber) {

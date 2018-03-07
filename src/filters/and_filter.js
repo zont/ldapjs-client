@@ -1,7 +1,7 @@
 const assert = require('assert-plus');
 const parents = require('ldap-filter');
 const { BerWriter } = require('asn1');
-const { FILTER_AND } = require('../protocol');
+const { FILTER_AND } = require('../utils/protocol');
 
 module.exports = class AndFilter extends parents.AndFilter {
   toBer(ber) {

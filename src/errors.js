@@ -1,6 +1,6 @@
 const assert = require('assert-plus');
-const { LDAPResult } = require('../messages');
-const CODES = require('./codes');
+const { LDAPResult } = require('./messages');
+const CODES = require('./utils/error-codes');
 
 const ERRORS = [];
 const capitalize = str => str.charAt(0) + str.slice(1).toLowerCase();

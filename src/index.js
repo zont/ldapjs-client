@@ -6,7 +6,7 @@ const Change = require('./change');
 const { parse } = require('./dn');
 const { getError, ConnectionError, TimeoutError, ProtocolError, LDAP_SUCCESS } = require('./errors');
 const { Add, Bind, Del, Modify, ModifyDN, Search, Unbind } = require('./requests');
-const { UnbindResponse, Response, SearchEntry, SearchReference, Parser } = require('./responses');
+const { Response, SearchEntry, SearchReference, Parser } = require('./responses');
 const parseUrl = require('./utils/parse-url');
 
 class Client {
@@ -171,7 +171,7 @@ class Client {
 
         if (message instanceof Unbind) {
           this._socket.removeAllListeners('close');
-          this._socket.on('close', () => resolve(new UnbindResponse()));
+          this._socket.on('close', () => resolve(new Response({})));
         }
 
         if (this.timeout) {

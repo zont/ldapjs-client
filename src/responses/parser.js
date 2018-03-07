@@ -4,12 +4,12 @@ const { BerReader } = require('asn1');
 const Protocol = require('../utils/protocol');
 
 const MAP = {
-  [Protocol.LDAP_REP_ADD]: require('./add_response'),
-  [Protocol.LDAP_REP_BIND]: require('./bind_response'),
-  [Protocol.LDAP_REP_DELETE]: require('./del_response'),
-  [Protocol.LDAP_REP_MODIFY]: require('./modify_response'),
-  [Protocol.LDAP_REP_MODRDN]: require('./moddn_response'),
-  [Protocol.LDAP_REP_SEARCH]: require('./search_response'),
+  [Protocol.LDAP_REP_ADD]: require('./response'),
+  [Protocol.LDAP_REP_BIND]: require('./response'),
+  [Protocol.LDAP_REP_DELETE]: require('./response'),
+  [Protocol.LDAP_REP_MODIFY]: require('./response'),
+  [Protocol.LDAP_REP_MODRDN]: require('./response'),
+  [Protocol.LDAP_REP_SEARCH]: require('./response'),
   [Protocol.LDAP_REP_SEARCH_ENTRY]: require('./search_entry'),
   [Protocol.LDAP_REP_SEARCH_REF]: require('./search_reference')
 };

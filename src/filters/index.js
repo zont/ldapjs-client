@@ -13,11 +13,15 @@ const OrFilter = require('./or_filter');
 const PresenceFilter = require('./presence_filter');
 const SubstringFilter = require('./substr_filter');
 
-const parseSet = (f, ber) => {
+const parseSet = ber => {
+  const filters = [];
   const end = ber.offset + ber.length;
+
   while (ber.offset < end) {
-    f.addFilter(_parse(ber));
+    filters.push(_parse(ber));
   }
+
+  return filters;
 };
 
 const _parse = ber => {
@@ -28,8 +32,7 @@ const _parse = ber => {
   const type = ber.readSequence();
   switch (type) {
     case Protocol.FILTER_AND:
-      f = new AndFilter();
-      parseSet(f, ber);
+      f = new AndFilter({ filters: parseSet(ber) });
       break;
 
     case Protocol.FILTER_APPROX:
@@ -40,32 +43,29 @@ const _parse = ber => {
     case Protocol.FILTER_EQUALITY:
       f = new EqualityFilter();
       f.parse(ber);
-      return f;
+      break;
 
     case Protocol.FILTER_EXT:
       f = new ExtensibleFilter();
       f.parse(ber);
-      return f;
+      break;
 
     case Protocol.FILTER_GE:
       f = new GreaterThanEqualsFilter();
       f.parse(ber);
-      return f;
+      break;
 
     case Protocol.FILTER_LE:
       f = new LessThanEqualsFilter();
       f.parse(ber);
-      return f;
+      break;
 
     case Protocol.FILTER_NOT:
-      f = new NotFilter({
-        filter: _parse(ber)
-      });
+      f = new NotFilter({ filter: _parse(ber) });
       break;
 
     case Protocol.FILTER_OR:
-      f = new OrFilter();
-      parseSet(f, ber);
+      f = new OrFilter({ filters: parseSet(ber) });
       break;
 
     case Protocol.FILTER_PRESENT:
@@ -82,8 +82,6 @@ const _parse = ber => {
       throw new Error(`Invalid search filter type: 0x${type.toString(16)}`);
   }
 
-
-  assert.ok(f);
   return f;
 };
 

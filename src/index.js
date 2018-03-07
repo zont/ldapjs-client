@@ -55,19 +55,7 @@ class Client {
     assert.string(entry, 'entry');
     assert.object(attributes, 'attributes');
 
-    attributes = Object.keys(attributes).map(k => {
-      const attr = new Attribute({ type: k });
-
-      if (Array.isArray(attributes[k])) {
-        attributes[k].forEach(v => attr.addValue(v.toString()));
-      } else {
-        attr.addValue(attributes[k].toString());
-      }
-
-      return attr;
-    });
-
-    return this._send(new AddRequest({ entry, attributes }));
+    return this._send(new AddRequest({ entry, attributes: Attribute.fromObject(attributes) }));
   }
 
   async bind(name, credentials = '') {
@@ -79,6 +67,7 @@ class Client {
 
   async del(entry) {
     assert.string(entry, 'entry');
+
     return this._send(new DeleteRequest({ entry }));
   }
 
@@ -89,7 +78,7 @@ class Client {
     change = Array.isArray(change) ? change : [change];
 
     const changes = [];
-    change.forEach(c => changes.push(...Change.FromObject(c)));
+    change.forEach(c => changes.push(...Change.fromObject(c)));
 
     return this._send(new ModifyRequest({ object, changes }));
   }
@@ -114,20 +103,13 @@ class Client {
   async search(baseObject, options) {
     assert.string(baseObject, 'baseObject');
     assert.object(options, 'options');
+    assert.optionalArrayOfString(options.attributes, 'options.attributes');
 
     options.filter = options.filter || '(objectclass=*)';
 
     assert.string(options.filter, 'options.filter');
 
     options.filter = parseString(options.filter);
-
-    if (options.attributes) {
-      if (typeof (options.attributes) === 'string') {
-        options.attributes = [options.attributes];
-      }
-
-      assert.arrayOfString(options.attributes, 'options.attributes');
-    }
 
     return this._send(new SearchRequest({
       baseObject,

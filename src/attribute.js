@@ -119,6 +119,20 @@ class Attribute {
     return typeof attr.toBer === 'function' && typeof attr.type === 'string' && Array.isArray(attr.vals)
       && attr.vals.filter(item => typeof item === 'string' || Buffer.isBuffer(item)).length === attr.vals.length;
   }
+
+  static fromObject(attributes) {
+    return Object.keys(attributes).map(k => {
+      const attr = new Attribute({ type: k });
+
+      if (Array.isArray(attributes[k])) {
+        attributes[k].forEach(v => attr.addValue(v.toString()));
+      } else {
+        attr.addValue(attributes[k].toString());
+      }
+
+      return attr;
+    });
+  }
 }
 
 module.exports = Attribute;

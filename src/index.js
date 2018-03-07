@@ -126,7 +126,7 @@ class Client {
     const newDN = dn.parse(newName);
     const req = new ModifyDNRequest({ entry, deleteOldRdn: true });
 
-    if (newDN.length !== 1) {
+    if (newDN.rdns.length !== 1) {
       req.newRdn = dn.parse(newDN.rdns.shift().toString());
       req.newSuperior = newDN;
     } else {

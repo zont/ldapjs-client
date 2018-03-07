@@ -16,7 +16,7 @@ module.exports = class SearchReference extends LDAPMessage {
   }
 
   get _dn() {
-    return new DN('');
+    return new DN();
   }
 
   get object() {

@@ -46,52 +46,21 @@ class RDN {
     }
   }
 
-  set(name, value, opts) {
+  set(name, value) {
     assert.string(name, 'name (string) required');
     assert.string(value, 'value (string) required');
 
     const lname = name.toLowerCase();
     this.attrs[lname] = { name, value };
-
-    if (opts && typeof opts === 'object') {
-      Object.keys(opts).forEach(k => {
-        if (k !== 'value')
-          this.attrs[lname][k] = opts[k];
-      });
-    }
-  }
-
-  equals(rdn) {
-    if (typeof rdn !== 'object') {
-      return false;
-    }
-
-    const _1 = Object.keys(this.attrs).sort();
-    const _2 = Object.keys(rdn.attrs).sort();
-
-    return _1.length === _2.length && _1.join() === _2.join() && _1.map(i => this.attrs[i].value).join() === _2.map(i => rdn.attrs[i].value).join();
-  }
-
-  format(options = {}) {
-    assert.optionalObject(options, 'options must be an object');
-
-    const keys = Object.keys(this.attrs);
-    if (options.keepOrder) {
-      keys.sort((a, b) => this.attrs[a].order - this.attrs[b].order);
-    } else {
-      keys.sort((a, b) => a.localeCompare(b) || this.attrs[a].value.localeCompare(this.attrs[b].value));
-    }
-
-    return keys
-      .map(key => {
-        const { name, value, quoted } = this.attrs[key];
-        return `${options.keepCase ? name : options.upperName ? key.toUpperCase() : key}=${escapeValue(value, options.keepQuote && quoted)}`;
-      })
-      .join('+');
   }
 
   toString() {
-    return this.format();
+    const keys = Object.keys(this.attrs);
+    keys.sort((a, b) => a.localeCompare(b) || this.attrs[a].value.localeCompare(this.attrs[b].value));
+
+    return keys
+      .map(key => `${key}=${escapeValue(this.attrs[key].value)}`)
+      .join('+');
   }
 }
 
@@ -243,138 +212,17 @@ const parse = name => {
 
 class DN {
   constructor(rdns) {
-    assert.optionalArrayOfObject(rdns, '[object] required');
+    assert.optionalArrayOfObject(rdns, 'rdns');
 
     this.rdns = rdns ? rdns.slice() : [];
-    this._format = {};
-  }
-
-  get length() {
-    return this.rdns.length;
   }
 
   static isDN(dn) {
     return dn instanceof DN || (dn && Array.isArray(dn.rdns));
   }
 
-  format(options) {
-    assert.optionalObject(options, 'options must be an object');
-    options = options || this._format;
-
-    let str = '';
-    this.rdns.forEach(rdn => {
-      const rdnString = rdn.format(options);
-      if (str.length !== 0) {
-        str += ',';
-      }
-      if (options.keepSpace) {
-        str += ' '.repeat(rdn.spLead) + rdnString + ' '.repeat(rdn.spTrail);
-      } else if (options.skipSpace === true || str.length === 0) {
-        str += rdnString;
-      } else {
-        str += ` ${  rdnString}`;
-      }
-    });
-    return str;
-  }
-
-  setFormat(options) {
-    assert.object(options, 'options must be an object');
-
-    this._format = options;
-  }
-
   toString() {
-    return this.format();
-  }
-
-  parentOf(dn) {
-    if (typeof (dn) !== 'object') {
-      dn = parse(dn);
-    }
-
-    if (this.rdns.length >= dn.rdns.length)
-      return false;
-
-    const diff = dn.rdns.length - this.rdns.length;
-    for (let i = this.rdns.length - 1; i >= 0; --i) {
-      const myRDN = this.rdns[i];
-      const theirRDN = dn.rdns[i + diff];
-
-      if (!myRDN.equals(theirRDN))
-        return false;
-    }
-
-    return true;
-  }
-
-  childOf(dn) {
-    if (typeof (dn) !== 'object') {
-      dn = parse(dn);
-    }
-    return dn.parentOf(this);
-  }
-
-  isEmpty() {
-    return (this.rdns.length === 0);
-  }
-
-  equals(dn) {
-    if (typeof (dn) !== 'object') {
-      dn = parse(dn);
-    }
-
-    if (this.rdns.length !== dn.rdns.length)
-      return false;
-
-    for (let i = 0; i < this.rdns.length; ++i) {
-      if (!this.rdns[i].equals(dn.rdns[i]))
-        return false;
-    }
-
-    return true;
-  }
-
-  parent() {
-    if (this.rdns.length !== 0) {
-      const save = this.rdns.shift();
-      const dn = new DN(this.rdns);
-      this.rdns.unshift(save);
-      return dn;
-    }
-
-    return null;
-  }
-
-  clone() {
-    const dn = new DN(this.rdns);
-    dn._format = this._format;
-    return dn;
-  }
-
-  reverse() {
-    this.rdns.reverse();
-    return this;
-  }
-
-  pop() {
-    return this.rdns.pop();
-  }
-
-  push(rdn) {
-    assert.object(rdn, 'rdn (RDN) required');
-
-    return this.rdns.push(rdn);
-  }
-
-  shift() {
-    return this.rdns.shift();
-  }
-
-  unshift(rdn) {
-    assert.object(rdn, 'rdn (RDN) required');
-
-    return this.rdns.unshift(rdn);
+    return this.rdns.map(String).join(', ');
   }
 }
 

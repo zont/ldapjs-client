@@ -1,14 +1,16 @@
 const assert = require('assert');
 const parents = require('ldap-filter');
-const Filter = require('./filter');
+const { BerWriter } = require('asn1');
+const { FILTER_NOT } = require('../protocol');
 
-class NotFilter extends parents.NotFilter {
-  _toBer(ber) {
-    assert.ok(ber);
-    return this.filter.toBer(ber);
+module.exports = class NotFilter extends parents.NotFilter {
+  toBer(ber) {
+    assert.ok(ber instanceof BerWriter, 'ber (BerWriter) required');
+
+    ber.startSequence(FILTER_NOT);
+    ber = this.filter.toBer(ber);
+    ber.endSequence();
+
+    return ber;
   }
-}
-
-Filter.mixin(NotFilter);
-
-module.exports = NotFilter;
+};

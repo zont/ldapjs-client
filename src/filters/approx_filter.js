@@ -1,8 +1,9 @@
-const assert = require('assert');
+const assert = require('assert-plus');
 const parents = require('ldap-filter');
-const Filter = require('./filter');
+const { BerWriter } = require('asn1');
+const { FILTER_APPROX } = require('../protocol');
 
-class ApproximateFilter extends parents.ApproximateFilter {
+module.exports = class ApproximateFilter extends parents.ApproximateFilter {
   parse(ber) {
     assert.ok(ber);
 
@@ -12,16 +13,14 @@ class ApproximateFilter extends parents.ApproximateFilter {
     return true;
   }
 
-  _toBer(ber) {
-    assert.ok(ber);
+  toBer(ber) {
+    assert.ok(ber instanceof BerWriter, 'ber (BerWriter) required');
 
+    ber.startSequence(FILTER_APPROX);
     ber.writeString(this.attribute);
     ber.writeString(this.value);
+    ber.endSequence();
 
     return ber;
   }
-}
-
-Filter.mixin(ApproximateFilter);
-
-module.exports = ApproximateFilter;
+};

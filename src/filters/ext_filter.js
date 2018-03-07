@@ -1,8 +1,9 @@
-const assert = require('assert');
+const assert = require('assert-plus');
 const parents = require('ldap-filter');
-const Filter = require('./filter');
+const { BerWriter } = require('asn1');
+const { FILTER_EXT } = require('../protocol');
 
-class ExtensibleFilter extends parents.ExtensibleFilter {
+module.exports = class ExtensibleFilter extends parents.ExtensibleFilter {
   parse(ber) {
     const end = ber.offset + ber.length;
     while (ber.offset < end) {
@@ -28,8 +29,10 @@ class ExtensibleFilter extends parents.ExtensibleFilter {
     return true;
   }
 
-  _toBer(ber) {
-    assert.ok(ber);
+  toBer(ber) {
+    assert.ok(ber instanceof BerWriter, 'ber (BerWriter) required');
+
+    ber.startSequence(FILTER_EXT);
 
     if (this.rule) {
       ber.writeString(this.rule, 0x81);
@@ -45,10 +48,8 @@ class ExtensibleFilter extends parents.ExtensibleFilter {
       ber.writeBoolean(this.dnAttributes, 0x84);
     }
 
+    ber.endSequence();
+
     return ber;
   }
-}
-
-Filter.mixin(ExtensibleFilter);
-
-module.exports = ExtensibleFilter;
+};

@@ -1,8 +1,9 @@
 const assert = require('assert');
 const parents = require('ldap-filter');
-const Filter = require('./filter');
+const { BerWriter } = require('asn1');
+const { FILTER_LE } = require('../protocol');
 
-class LessThanEqualsFilter extends parents.LessThanEqualsFilter {
+module.exports = class LessThanEqualsFilter extends parents.LessThanEqualsFilter {
   parse(ber) {
     assert.ok(ber);
 
@@ -12,16 +13,14 @@ class LessThanEqualsFilter extends parents.LessThanEqualsFilter {
     return true;
   }
 
-  _toBer(ber) {
-    assert.ok(ber);
+  toBer(ber) {
+    assert.ok(ber instanceof BerWriter, 'ber (BerWriter) required');
 
+    ber.startSequence(FILTER_LE);
     ber.writeString(this.attribute);
     ber.writeString(this.value);
+    ber.endSequence();
 
     return ber;
   }
-}
-
-Filter.mixin(LessThanEqualsFilter);
-
-module.exports = LessThanEqualsFilter;
+};

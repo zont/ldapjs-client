@@ -1,9 +1,9 @@
 const assert = require('assert-plus');
-const { Ber: { OctetString } } = require('asn1');
 const parents = require('ldap-filter');
-const Filter = require('./filter');
+const { Ber: { OctetString }, BerWriter } = require('asn1');
+const { FILTER_EQUALITY } = require('../protocol');
 
-class EqualityFilter extends parents.EqualityFilter {
+module.exports = class EqualityFilter extends parents.EqualityFilter {
   matches(target, strictAttrCase) {
     assert.object(target, 'target');
 
@@ -30,16 +30,14 @@ class EqualityFilter extends parents.EqualityFilter {
     return true;
   }
 
-  _toBer(ber) {
-    assert.ok(ber);
+  toBer(ber) {
+    assert.ok(ber instanceof BerWriter, 'ber (BerWriter) required');
 
+    ber.startSequence(FILTER_EQUALITY);
     ber.writeString(this.attribute);
     ber.writeBuffer(this.raw, OctetString);
+    ber.endSequence();
 
     return ber;
   }
-}
-
-Filter.mixin(EqualityFilter);
-
-module.exports = EqualityFilter;
+};

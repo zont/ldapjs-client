@@ -1,8 +1,9 @@
 const assert = require('assert');
 const parents = require('ldap-filter');
-const Filter = require('./filter');
+const { BerWriter } = require('asn1');
+const { FILTER_SUBSTRINGS } = require('../protocol');
 
-class SubstringFilter extends parents.SubstringFilter {
+module.exports = class SubstringFilter extends parents.SubstringFilter {
   parse(ber) {
     assert.ok(ber);
 
@@ -30,9 +31,10 @@ class SubstringFilter extends parents.SubstringFilter {
     return true;
   }
 
-  _toBer(ber) {
-    assert.ok(ber);
+  toBer(ber) {
+    assert.ok(ber instanceof BerWriter, 'ber (BerWriter) required');
 
+    ber.startSequence(FILTER_SUBSTRINGS);
     ber.writeString(this.attribute);
     ber.startSequence();
 
@@ -40,19 +42,17 @@ class SubstringFilter extends parents.SubstringFilter {
       ber.writeString(this.initial, 0x80);
     }
 
-    if (this.any && this.any.length)
+    if (this.any && this.any.length) {
       this.any.forEach(s => ber.writeString(s, 0x81));
+    }
 
     if (this.final) {
       ber.writeString(this.final, 0x82);
     }
 
     ber.endSequence();
+    ber.endSequence();
 
     return ber;
   }
-}
-
-Filter.mixin(SubstringFilter);
-
-module.exports = SubstringFilter;
+};

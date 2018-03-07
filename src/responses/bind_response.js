@@ -1,8 +1,8 @@
-const LDAPResult = require('./result');
+const Response = require('./response');
 const { LDAP_REP_BIND } = require('../utils/protocol');
 
-module.exports = class BindResponse extends LDAPResult {
+module.exports = class extends Response {
   constructor(options) {
-    super(Object.assign({}, options, {protocolOp: LDAP_REP_BIND}));
+    super(Object.assign({}, options, { protocolOp: LDAP_REP_BIND }));
   }
 };

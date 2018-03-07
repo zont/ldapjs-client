@@ -1,8 +1,8 @@
-const LDAPResult = require('./result');
+const Response = require('./response');
 const { LDAP_REP_ADD } = require('../utils/protocol');
 
-module.exports = class AddResponse extends LDAPResult {
+module.exports = class extends Response {
   constructor(options) {
-    super(Object.assign({}, options, {protocolOp: LDAP_REP_ADD}));
+    super(Object.assign({}, options, { protocolOp: LDAP_REP_ADD }));
   }
 };

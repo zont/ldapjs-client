@@ -6,7 +6,7 @@ const Change = require('./change');
 const { parse } = require('./dn');
 const { getError, ConnectionError, TimeoutError, ProtocolError, LDAP_SUCCESS } = require('./errors');
 const { Add, Bind, Del, Modify, ModifyDN, Search, Unbind } = require('./requests');
-const { UnbindResponse, LDAPResult, SearchEntry, SearchReference, Parser } = require('./responses');
+const { UnbindResponse, Response, SearchEntry, SearchReference, Parser } = require('./responses');
 const parseUrl = require('./utils/parse-url');
 
 class Client {
@@ -29,7 +29,7 @@ class Client {
       } else {
         const { resolve, reject, result, type } = this._queue.get(msg.id);
 
-        if (msg instanceof LDAPResult) {
+        if (msg instanceof Response) {
           if (msg.status !== LDAP_SUCCESS) {
             reject(getError(msg));
           }

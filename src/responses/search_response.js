@@ -1,8 +1,8 @@
-const LDAPResult = require('./result');
+const Response = require('./response');
 const { LDAP_REP_SEARCH } = require('../utils/protocol');
 
-module.exports = class SearchResponse extends LDAPResult {
+module.exports = class extends Response {
   constructor(options) {
-    super(Object.assign({ attributes : [] }, options, { protocolOp: LDAP_REP_SEARCH }));
+    super(Object.assign({ attributes: [] }, options, { protocolOp: LDAP_REP_SEARCH }));
   }
 };

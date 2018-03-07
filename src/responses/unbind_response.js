@@ -1,7 +1,7 @@
-const LDAPResult = require('./result');
+const Response = require('./response');
 
-module.exports = class UnbindResponse extends LDAPResult {
+module.exports = class extends Response {
   constructor(options) {
-    super(Object.assign({}, options, {protocolOp: 0}));
+    super(Object.assign({}, options, { protocolOp: 0 }));
   }
 };

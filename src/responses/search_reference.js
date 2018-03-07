@@ -1,19 +1,15 @@
 const assert = require('assert-plus');
-const LDAPMessage = require('./message');
+const Response = require('./response');
 const { LDAP_REP_SEARCH_REF } = require('../utils/protocol');
 const { DN } = require('../dn');
 const parseUrl = require('../utils/parse-url');
 
-module.exports = class SearchReference extends LDAPMessage {
+module.exports = class extends Response {
   constructor(options) {
-    super(Object.assign({ protocolOp: LDAP_REP_SEARCH_REF, uris: [] }, options));
+    super(Object.assign({ protocolOp: LDAP_REP_SEARCH_REF, uris: [], type: 'SearchReference' }, options));
   }
 
-  get type() {
-    return 'SearchReference';
-  }
-
-  get _dn() {
+  get dn() {
     return new DN();
   }
 
@@ -34,8 +30,8 @@ module.exports = class SearchReference extends LDAPMessage {
     this.uris = val.slice();
   }
 
-  _parse(ber, length) {
-    assert.ok(ber);
+  parse(ber) {
+    const length = ber.length;
 
     while (ber.offset < length) {
       const _url = ber.readString();
@@ -44,13 +40,5 @@ module.exports = class SearchReference extends LDAPMessage {
     }
 
     return true;
-  }
-
-  _toBer(ber) {
-    assert.ok(ber);
-
-    this.uris.forEach(u => ber.writeString(u.href || u));
-
-    return ber;
   }
 };

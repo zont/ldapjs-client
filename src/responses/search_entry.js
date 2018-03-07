@@ -1,25 +1,21 @@
 const assert = require('assert-plus');
-const LDAPMessage = require('./message');
+const Response = require('./response');
 const Attribute = require('../attribute');
 const { LDAP_REP_SEARCH_ENTRY } = require('../utils/protocol');
 const lassert = require('../utils/assert');
 
-module.exports = class SearchEntry extends LDAPMessage {
+module.exports = class extends Response {
   constructor(options) {
     options = options || {};
     assert.object(options);
     lassert.optionalStringDN(options.objectName);
 
-    super(Object.assign({ protocolOp: LDAP_REP_SEARCH_ENTRY, objectName: null }, options));
+    super(Object.assign({ protocolOp: LDAP_REP_SEARCH_ENTRY, objectName: null, type: 'SearchEntry' }, options));
 
     this._setAttributes(options.attributes || []);
   }
 
-  get type() {
-    return 'SearchEntry';
-  }
-
-  get _dn() {
+  get dn() {
     return this.objectName;
   }
 
@@ -35,6 +31,21 @@ module.exports = class SearchEntry extends LDAPMessage {
       }
     });
     return obj;
+  }
+
+  parse(ber) {
+    this.objectName = ber.readString();
+
+    assert.ok(ber.readSequence());
+
+    const end = ber.offset + ber.length;
+    while (ber.offset < end) {
+      const a = new Attribute();
+      a.parse(ber);
+      this.attributes.push(a);
+    }
+
+    return true;
   }
 
   _setAttributes(obj) {
@@ -55,32 +66,5 @@ module.exports = class SearchEntry extends LDAPMessage {
         this.attributes.push(attr);
       });
     }
-  }
-
-  _parse(ber) {
-    assert.ok(ber);
-
-    this.objectName = ber.readString();
-    assert.ok(ber.readSequence());
-
-    const end = ber.offset + ber.length;
-    while (ber.offset < end) {
-      const a = new Attribute();
-      a.parse(ber);
-      this.attributes.push(a);
-    }
-
-    return true;
-  }
-
-  _toBer(ber) {
-    assert.ok(ber);
-
-    ber.writeString(this.objectName.toString());
-    ber.startSequence();
-    ber = this.attributes.reduce((ber, a) => Attribute.toBer(a, ber), ber);
-    ber.endSequence();
-
-    return ber;
   }
 };

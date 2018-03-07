@@ -1,5 +1,5 @@
 const assert = require('assert-plus');
-const { LDAPResult } = require('./responses');
+const { Response } = require('./responses');
 const CODES = require('./utils/error-codes');
 
 const ERRORS = {};
@@ -84,7 +84,7 @@ module.exports = {
   LDAP_SUCCESS: CODES.LDAP_SUCCESS,
 
   getError(res) {
-    assert.ok(res instanceof LDAPResult, 'res (LDAPResult) required');
+    assert.ok(res instanceof Response, 'res (Response) required');
 
     return new (ERRORS[res.status])(null, res.matchedDN || null, module.exports.getError);
   }

@@ -116,6 +116,19 @@ describe('Client', () => {
     await client.destroy();
   });
 
+  it ('search w/ base scope', async () => {
+    const client = new Client({ url: 'ldap://www.zflexldap.com' });
+
+    await client.bind('cn=ro_admin,ou=sysadmins,dc=zflexsoftware,dc=com', 'zflexpass');
+    
+    try {
+      const response = await client.search('ou=guests,dc=zflexsoftware,dc=com', { scope: 'base' });
+      expect(response.length).toBeGreaterThanOrEqual(0);
+    } catch (e) {
+      expect(false).toBeTruthy();
+    }
+  });
+
   it('search not found', async () => {
     expect.assertions(2);
 

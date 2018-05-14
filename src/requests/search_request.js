@@ -15,9 +15,7 @@ module.exports = class extends Request {
   }
 
   set scope(val) {
-    const found = Object.getOwnPropertyNames(SCOPES).find(scope => scope === val);
-
-    if (!found) {
+    if (!(val in SCOPES)) {
       throw new Error(`${val} is an invalid search scope`);
     }
 

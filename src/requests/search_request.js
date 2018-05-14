@@ -15,11 +15,13 @@ module.exports = class extends Request {
   }
 
   set scope(val) {
-    this._scope = SCOPES[val];
+    const found = Object.getOwnPropertyNames(SCOPES).find(scope => scope === val);
 
-    if (!this._scope) {
+    if (!found) {
       throw new Error(`${val} is an invalid search scope`);
     }
+
+    this._scope = SCOPES[val];
   }
 
   _toBer(ber) {

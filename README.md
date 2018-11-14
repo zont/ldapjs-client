@@ -127,7 +127,7 @@ try {
 ### destroy
 ```js
 try {
-  await client.unbind();
+  await client.destroy();
 } catch (e) {
   console.log(e);
 }

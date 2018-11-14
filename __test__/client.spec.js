@@ -50,6 +50,8 @@ describe('Client', () => {
     await Promise.all([p1, p2]);
 
     expect(true).toBeTruthy();
+
+    await client.destroy();
   });
 
   it('bind fail', async () => {
@@ -120,13 +122,15 @@ describe('Client', () => {
     const client = new Client({ url: 'ldap://www.zflexldap.com' });
 
     await client.bind('cn=ro_admin,ou=sysadmins,dc=zflexsoftware,dc=com', 'zflexpass');
-    
+
     try {
       const response = await client.search('ou=guests,dc=zflexsoftware,dc=com', { scope: 'base' });
       expect(response.length).toBeGreaterThanOrEqual(0);
     } catch (e) {
       expect(false).toBeTruthy();
     }
+
+    await client.destroy();
   });
 
   it('search not found', async () => {

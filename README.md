@@ -7,9 +7,9 @@
 
 > node >= 8.0
 
-No `jdapjs` (https://www.npmjs.com/package/ldapjs) as dependency.
+No `ldapjs` (https://www.npmjs.com/package/ldapjs) as dependency.
 
-**Why**: because `jdapjs` is not maintained for more than two years.
+**Why**: because `ldapjs` is not maintained for more than two years.
 
 
 ## Installation

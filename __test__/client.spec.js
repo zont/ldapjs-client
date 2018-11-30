@@ -47,9 +47,11 @@ describe('Client', () => {
     const p1 = client.bind('cn=ro_admin,ou=sysadmins,dc=zflexsoftware,dc=com', 'zflexpass');
     const p2 = client.bind('uid=guest1,ou=users,ou=guests,dc=zflexsoftware,dc=com', 'guest1password');
 
-    await Promise.all([p1, p2]);
+    const responses = await Promise.all([p1, p2]);
 
-    expect(true).toBeTruthy();
+    responses.forEach(res => {
+      expect(res).ToBeTruthy();
+    });
 
     await client.destroy();
   });

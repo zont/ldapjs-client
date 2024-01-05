@@ -32,15 +32,15 @@ class Client {
           const { resolve, reject, result, request } = qItem;
 
           if (msg instanceof Response) {
-          if (msg.status !== LDAP_SUCCESS) {
-            reject(getError(msg));
-          }
+            if (msg.status !== LDAP_SUCCESS) {
+              reject(getError(msg));
+            }
 
-          resolve(request instanceof Search ? result : msg.object);
+            resolve(request instanceof Search ? result : msg.object);
           } else if (msg instanceof Error) {
-          reject(msg);
+            reject(msg);
           } else {
-          reject(new ProtocolError(msg.type));
+            reject(new ProtocolError(msg.type));
           }
 
           this._queue.delete(msg.id);

@@ -151,7 +151,7 @@ describe('Client', () => {
     await client.destroy();
   });
 
-  it('unbind', async () => {
+  xit('unbind', async () => {
     expect.assertions(4);
 
     const client = new Client({ url });

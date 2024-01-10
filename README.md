@@ -1,9 +1,6 @@
 # LDAP js client
 
-[!['Build status'][travis_image_url]][travis_page_url]
-
-[travis_image_url]: https://api.travis-ci.org/zont/ldapjs-client.svg
-[travis_page_url]: https://travis-ci.org/zont/ldapjs-client
+[![Node.js CI](https://github.com/zont/ldapjs-client/actions/workflows/node.js.yml/badge.svg)](https://github.com/zont/ldapjs-client/actions/workflows/node.js.yml)
 
 > node >= 8.0
 

@@ -27,21 +27,24 @@ class Client {
       if (msg instanceof SearchEntry || msg instanceof SearchReference) {
         this._queue.get(msg.id).result.push(msg.object);
       } else {
-        const { resolve, reject, result, request } = this._queue.get(msg.id);
+        const qItem = this._queue.get(msg.id);
+        if (qItem) {
+          const { resolve, reject, result, request } = qItem;
 
-        if (msg instanceof Response) {
-          if (msg.status !== LDAP_SUCCESS) {
-            reject(getError(msg));
+          if (msg instanceof Response) {
+            if (msg.status !== LDAP_SUCCESS) {
+              reject(getError(msg));
+            }
+
+            resolve(request instanceof Search ? result : msg.object);
+          } else if (msg instanceof Error) {
+            reject(msg);
+          } else {
+            reject(new ProtocolError(msg.type));
           }
 
-          resolve(request instanceof Search ? result : msg.object);
-        } else if (msg instanceof Error) {
-          reject(msg);
-        } else {
-          reject(new ProtocolError(msg.type));
+          this._queue.delete(msg.id);
         }
-
-        this._queue.delete(msg.id);
       }
     });
   }

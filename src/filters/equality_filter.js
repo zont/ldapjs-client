@@ -32,7 +32,9 @@ module.exports = class EqualityFilter extends parents.EqualityFilter {
 
   toBer(ber) {
     assert.ok(ber instanceof BerWriter, 'ber (BerWriter) required');
-
+    if (this.attribute.toLowerCase() === 'objectguid'){
+      this.raw = Buffer.from(this.value,'binary');
+    }
     ber.startSequence(FILTER_EQUALITY);
     ber.writeString(this.attribute);
     ber.writeBuffer(this.raw, OctetString);

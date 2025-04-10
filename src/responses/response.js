@@ -1,5 +1,6 @@
 const assert = require('assert-plus');
 const { LDAP_REP_REFERRAL } = require('../utils/protocol');
+const getControl = require('../controls/getControl');
 
 module.exports = class {
   constructor(options) {
@@ -9,6 +10,7 @@ module.exports = class {
     assert.optionalArrayOfString(options.referrals);
 
     Object.assign(this, { status: 0, matchedDN: '', errorMessage: '', referrals: [], type: 'Response' }, options);
+    this.controls = [];
   }
 
   get object() {
@@ -24,6 +26,15 @@ module.exports = class {
       const end = ber.offset + ber.length;
       while (ber.offset < end) {
         this.referrals.push(ber.readString());
+      }
+    }
+    
+    if (ber.peek() === 0xa0) {
+      ber.readSequence()
+      const end = ber.offset + ber.length;
+      while (ber.offset < end) {
+        const c = getControl(ber);
+        if (c) { this.controls.push(c); }
       }
     }
 

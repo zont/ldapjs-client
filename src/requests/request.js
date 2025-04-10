@@ -1,4 +1,5 @@
 const { BerWriter } = require('asn1');
+const controlToBer = require('../controls/controlToBer');
 
 let id = 0;
 const nextID = () => {
@@ -18,6 +19,15 @@ module.exports = class {
     writer.startSequence(this.protocolOp);
     writer = this._toBer(writer);
     writer.endSequence();
+    
+    if (this.controls.length > 0) {
+      writer.startSequence(0xa0);
+      this.controls.forEach((control) => {
+        controlToBer(control, writer);
+      })
+      writer.endSequence();
+    }
+    
     writer.endSequence();
     return writer.buffer;
   }

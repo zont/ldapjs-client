@@ -101,6 +101,35 @@ try {
 } catch (e) {
   console.log(e);
 }
+
+// paged response
+try {
+  const options = {
+    filter: '(&(l=Seattle)(email=*@foo.com))',
+    scope: 'sub',
+    attributes: ['dn', 'sn', 'cn'],
+    sizeLimit: 1000
+  };
+
+let hasNext = true;
+  let cookie = '';
+  let response = [];
+  while(hasNext){
+    let sizeLimit = 100;
+    const result = await client.search('o=example', { scope: 'sub', sizeLimit, cookie });
+    console.log(result);
+    if (result.length === sizeLimit+1){
+      const tmp = result.pop();
+      hasNext = tmp.hasNext;
+      cookie = tmp.cookie;
+      response = response.concat(result);
+    }
+  }
+
+  console.log(response);
+} catch (e) {
+  console.log(e);
+}
 ```
 
 Attribute | Type | Description
@@ -111,6 +140,7 @@ attributes | Array of String | attributes to select and return. Defaults to the 
 sizeLimit | Number | the maximum number of entries to return. Defaults to 0 (unlimited)
 timeLimit | Number | the maximum amount of time the server should take in responding, in seconds. Defaults to 10. Lots of servers will ignore this
 typesOnly | Boolean | on whether you want the server to only return the names of the attributes, and not their values. Borderline useless. Defaults to false
+cookie | string | For handling paged results, set an empty string initally
 
 ### unbind
 ```js

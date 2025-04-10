@@ -1,6 +1,7 @@
 const net = require('net');
 const tls = require('tls');
 const assert = require('assert-plus');
+const { BerReader } = require('asn1');
 const Attribute = require('./attribute');
 const Change = require('./change');
 const { parse } = require('./dn');
@@ -8,6 +9,7 @@ const { getError, ConnectionError, TimeoutError, ProtocolError, LDAP_SUCCESS } =
 const { Add, Bind, Del, Modify, ModifyDN, Search, Unbind } = require('./requests');
 const { Response, SearchEntry, SearchReference, Parser } = require('./responses');
 const parseUrl = require('./utils/parse-url');
+const { SIMPLE_PAGED_RESULTS } = require('./utils/ldapoid');
 
 class Client {
   constructor(options) {
@@ -34,6 +36,17 @@ class Client {
           if (msg instanceof Response) {
             if (msg.status !== LDAP_SUCCESS) {
               reject(getError(msg));
+            }
+
+            // need to make subsequent calls until all results have been collected
+            for (const control of msg.controls) {
+              if (control.tag === SIMPLE_PAGED_RESULTS) {
+                const reader = new BerReader(Buffer.from(control.controlValue));
+                reader.readSequence();
+                reader.readInt(); // sizeLimit server responded with
+                const cookie = reader.readString();
+                this._queue.get(msg.id).result.push({ hasNext: cookie.length > 0, cookie });
+              }
             }
 
             resolve(request instanceof Search ? result : msg.object);

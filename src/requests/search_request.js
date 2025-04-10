@@ -26,7 +26,16 @@ module.exports = class extends Request {
     ber.writeString(this.baseObject.toString());
     ber.writeEnumeration(this._scope);
     ber.writeEnumeration(NEVER_DEREF_ALIASES);
-    ber.writeInt(this.sizeLimit);
+    // If sizeLimit is between 0 and 2**31-1 this will cause server to return only that many results. 
+    // However, if the server contains more records than the given size limit it will 
+    // return EC 4 (SizeLimitExceeded).
+    // Simialarly if sizeLimit is set to high value, but the server has a default max
+    // sizeLimit that is smaller it will only return the max size limit set by the server again resulting
+    // in EC 4.
+    // To overcome this we need to use LDAP reqeust/response controls to be able to page the results.
+    // Additionally if EC 4 is given, when a sizeLimit greater than 0 is given
+    //  no response controls will be given and the request simply errs.
+    ber.writeInt(0); // sizeLimit, set to ulimited and use sizeLimit to control page size via controls
     ber.writeInt(this.timeLimit);
     ber.writeBoolean(this.typesOnly);
 

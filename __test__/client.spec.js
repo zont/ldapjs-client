@@ -122,7 +122,7 @@ describe('Client', () => {
     await client.destroy();
   });
 
-  it ('search w/ base scope', async () => {
+  it('search w/ base scope', async () => {
     const client = new Client({ url });
 
     await client.bind(user, password);
@@ -147,6 +147,32 @@ describe('Client', () => {
 
     expect(Array.isArray(response)).toBeTruthy();
     expect(response.length).toBe(0);
+
+    await client.destroy();
+  });
+
+  it('paged search', async () => {
+    const client = new Client({ url });
+    await client.bind(user, password);
+    const sizeLimit = 1;
+    let cookie = '';
+    let hasNext = true;
+    let i = 0;
+    let response = [];
+    while (hasNext && i < 5) {
+      const result = await client.search('ou=scientists,dc=example,dc=com', { scope: 'sub', sizeLimit, filters: '(objectclass=*)', attributes: ['cn'], cookie });
+      if (result.length === sizeLimit + 1) {
+        const tmp = result.pop();
+        hasNext = tmp.hasNext;
+        cookie = tmp.cookie;
+        response = response.concat(result);
+      }
+      i += 1;
+    }
+
+    expect(Array.isArray(response)).toBeTruthy();
+    expect(response.length).toBe(2);
+    expect(i).toBe(2);
 
     await client.destroy();
   });

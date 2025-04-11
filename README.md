@@ -137,6 +137,7 @@ scope | String | One of base, one, or sub. Defaults to base
 filter | String | A string version of an LDAP filter. Defaults to (objectclass=*)
 attributes | Array of String | attributes to select and return. Defaults to the empty set, which means all attributes
 sizeLimit | Number | the maximum number of entries to return. Defaults to 0 (unlimited)
+pageSize | Number | Page size for paged search. If this attribute is set, search results are retrieved in pages. ActiveDirectory has a default limit of 1000 returned entries. If a larger number of results is expected, this attribute should be set
 timeLimit | Number | the maximum amount of time the server should take in responding, in seconds. Defaults to 10. Lots of servers will ignore this
 typesOnly | Boolean | on whether you want the server to only return the names of the attributes, and not their values. Borderline useless. Defaults to false
 cookie | string | For handling paged results, set an empty string initally

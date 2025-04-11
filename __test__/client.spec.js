@@ -154,14 +154,14 @@ describe('Client', () => {
   it('paged search', async () => {
     const client = new Client({ url });
     await client.bind(user, password);
-    const sizeLimit = 1;
+    const pageSize = 1;
     let cookie = '';
     let hasNext = true;
     let i = 0;
     let response = [];
     while (hasNext && i < 5) {
-      const result = await client.search('ou=scientists,dc=example,dc=com', { scope: 'sub', sizeLimit, filters: '(objectclass=*)', attributes: ['cn'], cookie });
-      if (result.length === sizeLimit + 1) {
+      const result = await client.search('ou=scientists,dc=example,dc=com', { scope: 'sub', pageSize, filters: '(objectclass=*)', attributes: ['cn'], cookie });
+      if (result.length === pageSize + 1) {
         const tmp = result.pop();
         hasNext = tmp.hasNext;
         cookie = tmp.cookie;

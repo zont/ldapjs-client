@@ -108,20 +108,19 @@ try {
     filter: '(&(l=Seattle)(email=*@foo.com))',
     scope: 'sub',
     attributes: ['dn', 'sn', 'cn'],
-    sizeLimit: 1000
+    pageLimit: 1000,
+    cookie: ''
   };
 
-let hasNext = true;
-  let cookie = '';
+  let hasNext = true;
   let response = [];
   while(hasNext){
-    let sizeLimit = 100;
-    const result = await client.search('o=example', { scope: 'sub', sizeLimit, cookie });
+    const result = await client.search('o=example', options);
     console.log(result);
-    if (result.length === sizeLimit+1){
+    if (result.length === options.pageLimit+1){
       const tmp = result.pop();
       hasNext = tmp.hasNext;
-      cookie = tmp.cookie;
+      options.cookie = tmp.cookie;
       response = response.concat(result);
     }
   }

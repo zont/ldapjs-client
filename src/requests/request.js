@@ -22,7 +22,7 @@ module.exports = class {
     writer = this._toBer(writer);
     writer.endSequence();
     // add pagination control if sizeLimit is set
-    if (this.sizeLimit > 0 && this.sizeLimit <= MAX_INT) {
+    if (this.pageSize > 0 && this.pageSize <= MAX_INT) {
       writer.startSequence(LDAP_CONTROLS);
       writer.startSequence(); // Control
       writer.writeString(SIMPLE_PAGED_RESULTS);
@@ -31,7 +31,7 @@ module.exports = class {
       // reference https://docs.ldap.com/specs/rfc2696.txt
       let tmpWriter = new BerWriter();
       tmpWriter.startSequence();
-      tmpWriter.writeInt(this.sizeLimit); // might need to assert this is a number
+      tmpWriter.writeInt(this.pageSize); // might need to assert this is a number
       tmpWriter.writeString(this.cookie);
 
       tmpWriter.endSequence(); // end control value

@@ -1,4 +1,5 @@
 const assert = require('assert-plus');
+const { Ber } = require('asn1');
 const { LDAP_REP_REFERRAL, LDAP_CONTROLS } = require('../utils/protocol');
 
 module.exports = class {
@@ -33,8 +34,8 @@ module.exports = class {
         ber.readSequence();
         let control = {
           tag: ber.readString(),
-          criticality: ber.peek() === 1 ? ber.readBoolean() : false,
-          controlValue: ber.peek() === 4 ? ber.readString() : ''
+          criticality: ber.peek() === Ber.Boolean ? ber.readBoolean() : false,
+          controlValue: ber.peek() === Ber.OctetString ? ber.readString() : ''
         };
         this.controls.push(control);
       }

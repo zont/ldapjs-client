@@ -111,6 +111,7 @@ class Client {
     assert.optionalString(options.scope, 'options.scope');
     assert.optionalString(options.filter, 'options.filter');
     assert.optionalNumber(options.sizeLimit, 'options.sizeLimit');
+    assert.optionalNumber(options.pageSize, 'options.pageSize');
     assert.optionalNumber(options.timeLimit, 'options.timeLimit');
     assert.optionalArrayOfString(options.attributes, 'options.attributes');
 

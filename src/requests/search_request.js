@@ -26,7 +26,7 @@ module.exports = class extends Request {
     ber.writeString(this.baseObject.toString());
     ber.writeEnumeration(this._scope);
     ber.writeEnumeration(NEVER_DEREF_ALIASES);
-    ber.writeInt(this.sizeLimit); 
+    ber.writeInt(this.sizeLimit);
     ber.writeInt(this.timeLimit);
     ber.writeBoolean(this.typesOnly);
 

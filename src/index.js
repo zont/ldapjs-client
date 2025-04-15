@@ -140,7 +140,7 @@ class Client {
       while(true) {
         pagedResults.value.cookie = cookie;
         controls.length = 0;
-        controls0.forEach((conrol) => {
+        controls0.forEach((control) => {
           controls.push(control);
         });
         controls.push(pagedResults);

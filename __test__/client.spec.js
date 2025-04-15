@@ -121,6 +121,22 @@ describe('Client', () => {
 
     await client.destroy();
   });
+  
+  it('paged search', async () => {
+    expect.assertions(4);
+
+    const client = new Client({ url });
+
+    await client.bind(user, password);
+    const response = await client.search('ou=scientists,dc=example,dc=com', { scope: 'sub', pageSize: 100 });
+    
+    expect(response.length).toBeGreaterThan(0);
+    expect(response[0].dn).toBeDefined();
+    expect(response[0].ou).toBe('scientists');
+    expect(response[0].objectClass.length).toBeGreaterThan(0);
+
+    await client.destroy();
+  });
 
   it ('search w/ base scope', async () => {
     const client = new Client({ url });

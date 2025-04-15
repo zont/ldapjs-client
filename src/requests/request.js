@@ -1,5 +1,6 @@
 const { BerWriter } = require('asn1');
 const controlToBer = require('../controls/controlToBer');
+const { LDAP_CONTROLS } = require('../utils/protocol');
 
 let id = 0;
 const nextID = () => {
@@ -21,7 +22,7 @@ module.exports = class {
     writer.endSequence();
     
     if (this.controls.length > 0) {
-      writer.startSequence(0xa0);
+      writer.startSequence(LDAP_CONTROLS);
       this.controls.forEach((control) => {
         controlToBer(control, writer);
       })

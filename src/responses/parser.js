@@ -38,7 +38,13 @@ class Parser extends EventEmitter {
       return;
     }
 
-    if (ber.remain < ber.length) {
+    // If ber.length == 0, then we do not have a complete chunk
+    // and can't proceed with parsing.
+    // Allowing this function to continue results in an infinite loop
+    // and due to the recursive nature of this function quickly 
+    // hits the stack call size limit.
+    // This only happens with very large responses.
+    if (ber.remain < ber.length || ber.length === 0) {
       return;
     }
 

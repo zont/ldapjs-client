@@ -157,7 +157,7 @@ describe('Client', () => {
     const client = new Client({ url });
 
     await client.bind(user, password);
-    const response = await client.search('ou=scientists,dc=example,dc=com', { scope: 'sub', pageSize: 100 });
+    const response = await client.search('ou=scientists,dc=example,dc=com', { scope: 'sub', pageSize: 1 });
 
     expect(response.length).toBeGreaterThan(0);
     expect(response[0].dn).toBeDefined();

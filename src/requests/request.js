@@ -50,7 +50,7 @@ module.exports = class {
 
     if (this.controls.length > 0) {
       writer.startSequence(LDAP_CONTROLS);
-      this.controls.array.forEach((control) => {
+      this.controls.forEach((control) => {
         controlToBer(control, writer);
       });
       writer.endSequence();

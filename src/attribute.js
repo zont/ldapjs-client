@@ -2,7 +2,7 @@ const assert = require('assert-plus');
 const asn1 = require('asn1');
 const Protocol = require('./utils/protocol');
 
-const _bufferEncoding = type =>  /;binary$/.test(type) ? 'base64' : 'utf8';
+const _bufferEncoding = type =>  type.endsWith(';binary') ? 'base64' : 'utf8';
 
 class Attribute {
   constructor(options) {
@@ -43,7 +43,7 @@ class Attribute {
     if (Buffer.isBuffer(val)) {
       this._vals.push(val);
     } else {
-      this._vals.push(new Buffer(String(val), _bufferEncoding(this.type)));
+      this._vals.push(Buffer.from(String(val), _bufferEncoding(this.type)));
     }
   }
 

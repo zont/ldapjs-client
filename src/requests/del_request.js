@@ -10,7 +10,7 @@ module.exports = class extends Request {
   }
 
   _toBer(ber) {
-    new Buffer(this.entry).forEach(i => ber.writeByte(i));
+    Buffer.from(this.entry).forEach(i => ber.writeByte(i));
 
     return ber;
   }

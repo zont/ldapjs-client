@@ -17,7 +17,7 @@ module.exports = class PresenceFilter extends parents.PresenceFilter {
     assert.ok(ber instanceof BerWriter, 'ber (BerWriter) required');
 
     ber.startSequence(FILTER_PRESENT);
-    new Buffer(this.attribute).forEach(i => ber.writeByte(i));
+    Buffer.from(this.attribute).forEach(i => ber.writeByte(i));
     ber.endSequence();
 
     return ber;

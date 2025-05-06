@@ -8,6 +8,7 @@ const { getError, ConnectionError, TimeoutError, ProtocolError, LDAP_SUCCESS } =
 const { Add, Bind, Del, Modify, ModifyDN, Search, Unbind } = require('./requests');
 const { Response, SearchEntry, SearchReference, Parser } = require('./responses');
 const parseUrl = require('./utils/parse-url');
+const OID = require('./utils/OID');
 
 class Client {
   constructor(options) {
@@ -29,12 +30,15 @@ class Client {
       } else {
         const qItem = this._queue.get(msg.id);
         if (qItem) {
-          const { resolve, reject, result, request } = qItem;
+          const { resolve, reject, result, request, controls } = qItem;
 
           if (msg instanceof Response) {
             if (msg.status !== LDAP_SUCCESS) {
               reject(getError(msg));
             }
+
+            controls.length = 0;
+            msg.controls.forEach((control) => controls.push(control));
 
             resolve(request instanceof Search ? result : msg.object);
           } else if (msg instanceof Error) {
@@ -49,37 +53,37 @@ class Client {
     });
   }
 
-  async add(entry, attributes) {
+  async add(entry, attributes, controls = []) {
     assert.string(entry, 'entry');
     assert.object(attributes, 'attributes');
 
-    return this._send(new Add({ entry, attributes: Attribute.fromObject(attributes) }));
+    return this._send(new Add({ entry, attributes: Attribute.fromObject(attributes), controls }));
   }
 
-  async bind(name, credentials) {
+  async bind(name, credentials, controls = []) {
     assert.string(name, 'name');
     assert.optionalString(credentials, 'credentials');
 
-    return this._send(new Bind({ name, credentials }));
+    return this._send(new Bind({ name, credentials, controls }));
   }
 
-  async del(entry) {
+  async del(entry, controls = []) {
     assert.string(entry, 'entry');
 
-    return this._send(new Del({ entry }));
+    return this._send(new Del({ entry, controls }));
   }
 
-  async modify(entry, change) {
+  async modify(entry, change, controls = []) {
     assert.string(entry, 'entry');
     assert.object(change, 'change');
 
     const changes = [];
     (Array.isArray(change) ? change : [change]).forEach(c => changes.push(...Change.fromObject(c)));
 
-    return this._send(new Modify({ entry, changes }));
+    return this._send(new Modify({ entry, changes, controls }));
   }
 
-  async modifyDN(entry, newName) {
+  async modifyDN(entry, newName, controls = []) {
     assert.string(entry, 'entry');
     assert.string(newName, 'newName');
 
@@ -88,24 +92,66 @@ class Client {
     if (newRdn.rdns.length !== 1) {
       return this._send(new ModifyDN({ entry, newRdn: parse(newRdn.rdns.shift().toString()), newSuperior: newRdn }));
     } else {
-      return this._send(new ModifyDN({ entry, newRdn }));
+      return this._send(new ModifyDN({ entry, newRdn, controls }));
     }
   }
 
-  async search(baseObject, options) {
+  async search(baseObject, options, controls = []) {
     assert.string(baseObject, 'baseObject');
     assert.object(options, 'options');
     assert.optionalString(options.scope, 'options.scope');
     assert.optionalString(options.filter, 'options.filter');
     assert.optionalNumber(options.sizeLimit, 'options.sizeLimit');
+    assert.optionalNumber(options.pageSize, 'options.pageSize');
     assert.optionalNumber(options.timeLimit, 'options.timeLimit');
     assert.optionalArrayOfString(options.attributes, 'options.attributes');
 
-    return this._send(new Search(Object.assign({ baseObject }, options)));
+    if (options.pageSize) {
+      let pageSize = options.pageSize;
+      if (pageSize > options.sizeLimit) pageSize = options.sizeLimit;
+
+      const pagedResults = {
+        OID: OID.PagedResults,
+        criticality: true,
+        value: {
+          size: pageSize,
+          cookie: ''
+        }
+      };
+
+      controls = controls.filter((control) => {
+        return control.OID !== OID.PagedResults;
+      });
+      controls.push(pagedResults);
+
+      let cookie = '';
+      const results = [];
+      let hasNext = true;
+      while (hasNext) {
+        pagedResults.value.cookie = cookie;
+
+        results.push(await this._send(new Search(Object.assign({ baseObject, controls }, options))));
+
+        const responsePagedResults = controls.find((control) => {
+          return control.OID === OID.PagedResults;
+        });
+
+        if (responsePagedResults !== undefined) {
+          cookie = responsePagedResults.value.cookie;
+        } else {
+          hasNext = false;
+        }
+      }
+
+      return results.flat();
+
+    } else {
+      return this._send(new Search(Object.assign({ baseObject, controls }, options)));
+    }
   }
 
-  async unbind() {
-    return this._send(new Unbind());
+  async unbind(controls = []) {
+    return this._send(new Unbind({controls}));
   }
 
   async destroy() {
@@ -169,7 +215,7 @@ class Client {
 
     return new Promise((resolve, reject) => {
       try {
-        this._queue.set(message.id, { resolve, reject, request: message, result: [] });
+        this._queue.set(message.id, { resolve, reject, request: message, result: [], controls: message.controls });
         this._socket.write(message.toBer());
 
         if (message instanceof Unbind) {

@@ -110,6 +110,10 @@ class Client {
       let pageSize = options.pageSize;
       if (pageSize > options.sizeLimit) pageSize = options.sizeLimit;
 
+      const controls0 = controls.filter((control) => {
+        return control.OID !== OID.PagedResults;
+      });
+
       const pagedResults = {
         OID: OID.PagedResults,
         criticality: true,
@@ -119,31 +123,29 @@ class Client {
         }
       };
 
-      controls = controls.filter((control) => {
-        return control.OID !== OID.PagedResults;
-      });
-      controls.push(pagedResults);
-
       let cookie = '';
-      const results = [];
+      let results = [];
       let hasNext = true;
       while (hasNext) {
         pagedResults.value.cookie = cookie;
+        controls.length = 0;
+        controls = controls.concat(controls0);
+        controls.push(pagedResults);
 
-        results.push(await this._send(new Search(Object.assign({ baseObject, controls }, options))));
+        results = results.concat(await this._send(new Search(Object.assign({ baseObject, controls }, options))));
 
         const responsePagedResults = controls.find((control) => {
           return control.OID === OID.PagedResults;
         });
 
-        if (responsePagedResults !== undefined) {
+        if (responsePagedResults !== undefined && responsePagedResults.value.cookie !== '') {
           cookie = responsePagedResults.value.cookie;
         } else {
           hasNext = false;
         }
       }
 
-      return results.flat();
+      return results;
 
     } else {
       return this._send(new Search(Object.assign({ baseObject, controls }, options)));
